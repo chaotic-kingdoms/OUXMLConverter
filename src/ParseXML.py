@@ -1,13 +1,10 @@
-import sys
-import re
 import urllib2
 import Course
-from xml.etree import ElementTree 
-import traceback
+import CheckUsedTags
+from xml.etree import ElementTree
 from Tkinter import Tk
 from tkFileDialog import askopenfilename
-from itertools import chain
-from lxml.etree import tostring
+import lxml.etree as ET
 
 
 class ParseXML:
@@ -16,8 +13,11 @@ class ParseXML:
     sections = []
 
     def __init__(self):
+        #Select a File
         Tk().withdraw()
         path = askopenfilename()
+        self.tohtml(path)
+        CheckUsedTags.CheckUsedTags(path)
         self.getcourse(path)
         Course.Course(self.course_title, "", self.sections)
 
@@ -51,4 +51,13 @@ class ParseXML:
 
         self.sections.append(Course.Section(section_title, sessions))
 
+    def tohtml(self, path):
+        file = open(path, "r")
+        for line in file:
+            if "glossary" not in line:
+                dom = ET.parse(urllib2.urlopen(line))
+                xslt = ET.parse("coursetemplate.xsl")
+                transform = ET.XSLT(xslt)
+                newdom = transform(dom)
+                print(ET.tostring(newdom, pretty_print=True))
 ParseXML()
