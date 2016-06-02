@@ -10,13 +10,16 @@ class Course:
         self.title = title
         self.meta = meta
         self.sections = sections
-        print title
+
+        name = "curso1.txt"
+        file = open(name, "w+")
+        file.write(title.encode('utf-8') + "\n")
         for section in sections:
-            print section.title
+            file.write(section.title + "\n")
             for session in section.sessions:
-                print session.title
-                for content in session.content:
-                    print content
+                file.write(session.title + "\n")
+                file.write(session.content + "\n")
+        file.close()
 
 
 class Section:
@@ -32,7 +35,7 @@ class Section:
 class Session:
 
     title = ""
-    content = []
+    content = ""
 
     def __init__(self, title, content):
         self.title = title
