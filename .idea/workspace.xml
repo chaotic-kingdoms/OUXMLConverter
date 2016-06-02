@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="c2b909b6-59ae-4e99-bc2d-83b8c542d35c" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/Course.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/ParseXML.py" />
-    </list>
+    <list default="true" id="c2b909b6-59ae-4e99-bc2d-83b8c542d35c" name="Default" comment="" />
     <ignored path="OUXML.iws" />
     <ignored path=".idea/workspace.xml" />
     <ignored path=".idea/dataSources.local.xml" />
