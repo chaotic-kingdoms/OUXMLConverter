@@ -9,7 +9,6 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
         </html>
     </xsl:template>
 
-
     <xsl:template match="Paragraph">
         &lt;p&gt;<xsl:value-of select="."/><xsl:apply-templates/>&lt;/p&gt;
     </xsl:template>
@@ -67,7 +66,7 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     </xsl:template>
 
     <xsl:template match="br">
-        &lt;br&gt;
+        &lt;br/&gt;
     </xsl:template>
 
     <xsl:template match="b">

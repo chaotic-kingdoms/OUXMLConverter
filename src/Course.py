@@ -1,6 +1,5 @@
 
-import lxml.etree as ET
-
+import ContentPreprocessor as CP
 
 class Course:
 
@@ -13,25 +12,16 @@ class Course:
         self.meta = meta
         self.sections = sections
 
-
-    def coursetofile(self):
-        """Write the complete course to a file named testcourse.txt"""
-        file = open("testcourse.txt", "w+")
-        file.write(self.coursetohtml(self.title) + "\n")
+    def coursetofile(self, filename):
+        """Write the complete course to a file"""
+        file = open(filename, "w+")
+        file.write(self.title + "\n")
         for section in self.sections:
-            file.write(self.coursetohtml(section.title) + "\n")
+            file.write(section.title + "\n")
             for session in section.sessions:
-                file.write(self.coursetohtml(session.title + "\n"))
-                file.write(self.coursetohtml(session.content + "\n"))
+                file.write(session.title + "\n")
+                file.write(session.content + "\n")
         file.close()
-
-    def coursetohtml(self, content):
-        """Apply XSLT to a course and returns the converted HTML text"""
-        dom = ET.XML(content, ET.XMLParser(target=ET.TreeBuilder()))
-        xslt = ET.parse("coursetemplate.xsl")
-        transform = ET.XSLT(xslt)
-        newdom = transform(dom)
-        return ET.tostring(newdom, pretty_print=True)
 
 
 class Section:

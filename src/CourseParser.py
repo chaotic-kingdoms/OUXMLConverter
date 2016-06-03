@@ -4,7 +4,7 @@ import CheckUsedTags
 from xml.etree import ElementTree
 from Tkinter import Tk
 from tkFileDialog import askopenfilename
-
+import ContentPreprocessor as CP
 
 
 class ParseXML:
@@ -17,7 +17,9 @@ class ParseXML:
         path = askopenfilename()    #File Selection
         #CheckUsedTags.CheckUsedTags(path)
         course = self.getcourse(path)
-        course.coursetofile()
+        course.coursetofile("CourseOU.txt")
+        CP.ContentPreprocessor("coursetemplate.xsl").coursetohtml(course)
+        course.coursetofile("CourseOppia.txt")
 
 
     def getcourse(self, path):
@@ -35,14 +37,14 @@ class ParseXML:
         """ Parse the xml file and build the course"""
         element = ElementTree.fromstring(content)
 
-        self.course_title = ElementTree.tostring(element.find('CourseTitle'), 'utf8', 'html')
-        section_title = ElementTree.tostring(element.find('ItemTitle'), 'utf8', 'html')
+        self.course_title = ElementTree.tostring(element.find('CourseTitle'), 'utf8', 'html').replace("<br>", "<br/>")
+        section_title = ElementTree.tostring(element.find('ItemTitle'), 'utf8', 'html').replace("<br>", "<br/>")
 
         sessions = []
         for session in element.iter('Session'):
-            session_title = ElementTree.tostring(session.find('Title'), 'utf8', 'html')
+            session_title = ElementTree.tostring(session.find('Title'), 'utf8', 'html').replace("<br>", "<br/>")
             session.remove(session.find('Title'))
-            content = ElementTree.tostring(session, 'utf8', 'html')
+            content = ElementTree.tostring(session, 'utf8', 'html').replace("<br>", "<br/>")
             sessions.append(Course.Session(session_title, content))
 
         self.sections.append(Course.Section(section_title, sessions))
