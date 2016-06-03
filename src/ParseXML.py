@@ -19,6 +19,7 @@ class ParseXML:
         course = self.getcourse(path)
         course.coursetofile()
 
+
     def getcourse(self, path):
         """ Get the course from a .txt that contains the URLs to the xml files of the course sections"""
         file = open(path, "r")
@@ -42,7 +43,6 @@ class ParseXML:
             session_title = ElementTree.tostring(session.find('Title'), 'utf8', 'html')
             session.remove(session.find('Title'))
             content = ElementTree.tostring(session, 'utf8', 'html')
-
             sessions.append(Course.Session(session_title, content))
 
         self.sections.append(Course.Section(section_title, sessions))
