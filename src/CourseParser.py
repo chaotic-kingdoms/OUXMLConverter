@@ -5,6 +5,7 @@ from xml.etree import ElementTree
 from Tkinter import Tk
 from tkFileDialog import askopenfilename
 import ContentPreprocessor as CP
+from urllib2 import HTTPError, URLError
 
 
 class ParseXML:
@@ -16,6 +17,7 @@ class ParseXML:
         Tk().withdraw()
         path = askopenfilename()    #File Selection
         #CheckUsedTags.CheckUsedTags(path)
+        print('Getting course from file ' + path)
         course = self.getcourse(path)
         course.coursetofile("CourseOU.txt")
         CP.ContentPreprocessor("coursetemplate.xsl").coursetohtml(course)
@@ -25,10 +27,26 @@ class ParseXML:
     def getcourse(self, path):
         """ Get the course from a .txt that contains the URLs to the xml files of the course sections"""
         file = open(path, "r")
-        for line in file:
-            if "glossary" not in line:
-                self.parsexml(urllib2.urlopen(line).read())
-                #self.parsexml(re.sub(r'<(b|i)>(.*?)<\/(b|i)>', "&gt;\g<1>&lt;\g<2>&gt;\g<3>&lt;", urllib2.urlopen(line).read()))
+
+        i = 1
+        for xml_url in file:
+            if "glossary" not in xml_url:
+                try:
+                    print('Requesting file ' + str(i) + '...')
+                    response = urllib2.urlopen(xml_url)
+                    section_xml = response.read()
+                except HTTPError as e:
+                    print('The server couldn\'t fulfill the request.')
+                    print('Error code: ', e.code)
+                except URLError as e:
+                    print('We failed to reach a server.')
+                    print('Reason: ', e.reason)
+                else:
+                    print('Parsing file ' + str(i))
+                    self.parsexml(section_xml)
+                    response.close()
+            i += 1
+
         file.close()
 
         return Course.Course(self.course_title, "", self.sections)
@@ -37,17 +55,17 @@ class ParseXML:
         """ Parse the xml file and build the course"""
         element = ElementTree.fromstring(content)
 
-        self.course_title = ElementTree.tostring(element.find('CourseTitle'), 'utf8', 'html').replace("<br>", "<br/>")
-        section_title = ElementTree.tostring(element.find('ItemTitle'), 'utf8', 'html').replace("<br>", "<br/>")
+        self.course_title = ElementTree.tostring(element.find('CourseTitle'), 'utf8', 'xml')
+        section_title = ElementTree.tostring(element.find('ItemTitle'), 'utf8', 'xml')
 
         sessions = []
         for session in element.iter('Session'):
-            session_title = ElementTree.tostring(session.find('Title'), 'utf8', 'html').replace("<br>", "<br/>")
+            session_title = ElementTree.tostring(session.find('Title'), 'utf8', 'xml')
             session.remove(session.find('Title'))
-            content = ElementTree.tostring(session, 'utf8', 'html').replace("<br>", "<br/>")
+            content = ElementTree.tostring(session, 'utf8', 'xml')
             sessions.append(Course.Session(session_title, content))
 
         self.sections.append(Course.Section(section_title, sessions))
-
+        print("Success parsing file!\n")
 
 ParseXML()

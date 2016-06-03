@@ -18,7 +18,10 @@ class ContentPreprocessor:
         return ET.tostring(newdom, pretty_print=True)
 
     def coursetohtml(self, course):
+
+        print('Beginning to apply XSLT to the course...')
         course.title = self.contenttohtml(course.title)
+        print('XSLT applied successfully!')
 
         for section in course.sections:
             section.title = self.contenttohtml(section.title)

@@ -11,9 +11,11 @@ class Course:
         self.title = title
         self.meta = meta
         self.sections = sections
+        print ('Course created successfully!\n')
 
     def coursetofile(self, filename):
         """Write the complete course to a file"""
+        print('Writing course to the file ' + filename)
         file = open(filename, "w+")
         file.write(self.title + "\n")
         for section in self.sections:
@@ -32,7 +34,7 @@ class Section:
     def __init__(self, title, sessions):
         self.title = title
         self.sessions = sessions
-
+        print ('Section created successfully!')
 
 class Session:
 
@@ -40,5 +42,6 @@ class Session:
     content = ""
 
     def __init__(self, title, content):
+        print ('Creating session...')
         self.title = title
         self.content = content
