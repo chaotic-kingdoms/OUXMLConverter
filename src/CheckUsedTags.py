@@ -19,6 +19,7 @@ class CheckUsedTags:
         print self.used_tags
 
     def getusedtags(self, content):
+        """Returns the used tags in OU courses"""
         element = ElementTree.fromstring(content)
         for e in element.iter():
             if e.tag in self.used_tags:

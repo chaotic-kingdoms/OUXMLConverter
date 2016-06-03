@@ -5,17 +5,33 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
     <xsl:template match="/">
         <html>
-        <body>
-            <xsl:for-each select="Item/Unit/Session">
-                <p><xsl:value-of select="Paragraph"/></p>
-            </xsl:for-each>
-
-            <xsl:for-each select="Item/Unit/Session/BulletedList">
-                <ul>
-                    <li><xsl:value-of select="ListItem"/></li>
-                </ul>
-            </xsl:for-each>
-        </body>
+            <xsl:apply-templates/>
         </html>
     </xsl:template>
+
+    <xsl:template match="BulletedList">
+        &lt;ul&gt;
+            <xsl:for-each select="ListItem">
+                &lt;li&gt;<xsl:value-of select="."/>&lt;/li&gt;
+            </xsl:for-each>
+        &lt;/ul&gt;
+    </xsl:template>
+
+    <xsl:template match="Paragraph">
+        &lt;p&gt;<xsl:value-of select="."/>&lt;/p&gt;
+    </xsl:template>
+
+    <xsl:template match="Image">
+        <img>
+            <xsl:attribute name="src">
+                <xsl:value-of select="."/>
+            </xsl:attribute>
+        </img>
+    </xsl:template>
+
+    <xsl:template match="br">
+        &lt;br&gt;
+    </xsl:template>
+
+
 </xsl:stylesheet>
