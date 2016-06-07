@@ -22,6 +22,7 @@ class ParseXML:
         course = self.getcourse(path)
         course.coursetofile("CourseOU.txt")
         CP.ContentPreprocessor("coursetemplate.xsl").coursetohtml(course)
+        CourseExporter.CourseExporter(course)
         course.coursetofile("CourseOppia.txt")
 
 
@@ -49,9 +50,7 @@ class ParseXML:
             i += 1
 
         file.close()
-        course = Course.Course(self.course_title, "", self.sections)
-        CourseExporter.CourseExporter(course)
-        return course
+        return Course.Course(self.course_title, "", self.sections)
 
     def parsexml(self, content):
         """ Parse the xml file and build the course"""
