@@ -1,6 +1,7 @@
 import urllib2
 import Course
 import CheckUsedTags
+import CourseExporter
 from xml.etree import ElementTree
 from Tkinter import Tk
 from tkFileDialog import askopenfilename
@@ -32,7 +33,7 @@ class ParseXML:
         for xml_url in file:
             if "glossary" not in xml_url:
                 try:
-                    print('Requesting file ' + str(i) + '...')
+                    print('Requesting file ' + str(i) + '(' + xml_url.rstrip() + ')' + '...')
                     response = urllib2.urlopen(xml_url)
                     section_xml = response.read()
                 except HTTPError as e:
@@ -48,8 +49,9 @@ class ParseXML:
             i += 1
 
         file.close()
-
-        return Course.Course(self.course_title, "", self.sections)
+        course = Course.Course(self.course_title, "", self.sections)
+        CourseExporter.CourseExporter(course)
+        return course
 
     def parsexml(self, content):
         """ Parse the xml file and build the course"""
