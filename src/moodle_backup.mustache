@@ -30,13 +30,23 @@
       </detail>
     </details>
     <contents>
-      <activities></activities>
+      <activities>
+        {{#sessions}}
+        <activity>
+          <moduleid>{{sessionid}}</moduleid>
+          <sectionid>{{sectionid}}</sectionid>
+          <modulename>page</modulename>
+          <title>{{title}}</title>
+          <directory>{{session_directory}}</directory>
+        </activity>
+        {{/sessions}}
+      </activities>
       <sections>
         {{#sections}}
         <section>
-          <sectionid>{{id}}</sectionid>
+          <sectionid>{{sectionid}}</sectionid>
           <title>0</title>
-          <directory>{{directory}}</directory>
+          <directory>{{section_directory}}</directory>
         </section>
         {{/sections}}
       </sections>
