@@ -8,9 +8,13 @@ class CourseExporter:
     session_values = []
 
     def __init__(self, course):
+        print('\nExporting course to Oppia format...')
         self.generate_base_course(course)
 
     def generate_base_course(self, course):
+        """ Create all the base files needed to restore the course. """
+        print('\nGenerating course base files...')
+
         if not os.path.exists('Course'):
             os.makedirs('Course')
 
@@ -25,51 +29,53 @@ class CourseExporter:
         self.generate_moodle_backup_info()
 
     def generate_roles_files(self):
-        print('Generating Course/course/roles.xml... ')
         f = open("Course/course/roles.xml", "wb+")
         f.write('<?xml version="1.0" encoding="UTF-8"?>\n<roles><role_overrides>'
                 '</role_overrides><role_assignments></role_assignments></roles>')
         f.close()
+        print('Course/course/roles.xml created.')
 
-        print('Generating Course/roles.xml... ')
         f = open("Course/roles.xml", "wb+")
         f.write('<?xml version="1.0" encoding="UTF-8"?>\n<roles_definition></roles_definition>')
         f.close()
+        print('Course/roles.xml created. ')
 
     def generate_groups_file(self):
-        print('Generating goups.xml... ')
         f = open("Course/groups.xml", "wb+")
         f.write('<?xml version="1.0" encoding="UTF-8"?>\n<groups></groups>')
         f.close()
+        print('goups.xml created.')
 
     def generate_outcomes_file(self):
-        print('Generating outcomes.xml... ')
         f = open("Course/outcomes.xml", "wb+")
         f.write('<?xml version="1.0" encoding="UTF-8"?>\n<outcomes_definition></outcomes_definition>')
         f.close()
+        print('outcomes.xml created.')
 
     def generate_questions_file(self):
-        print('Generating questions.xml... ')
         f = open("Course/questions.xml", "wb+")
         f.write('<?xml version="1.0" encoding="UTF-8"?>\n<question_categories></question_categories>')
         f.close()
+        print('questions.xml created.')
 
     def generate_scales_file(self):
-        print('Generating scales.xml... ')
         f = open("Course/scales.xml", "wb+")
         f.write('<?xml version="1.0" encoding="UTF-8"?>\n<scales_definition></scales_definition>')
         f.close()
+        print('scales.xml created.')
 
     def generate_sections(self, sections):
         """ Generate all the files that include information about the sections"""
-        print('Generating sections... ')
+        print('\nGenerating sections...')
 
         renderer = pystache.Renderer()
-        i = 1
 
         # Create section.xml files within the "sections" directory
+        i = 1
         for section in sections:
+            #Information of sections for "moodle_backup.xml" file
             self.section_values.append({'sectionid': str(i), 'section_directory': 'sections/section_' + str(i)})
+
             if not os.path.exists('Course/sections/section_' + str(i)):
                 os.makedirs("Course/sections/section_" + str(i))
 
@@ -77,9 +83,8 @@ class CourseExporter:
             section_file.write(renderer.render_path('section.mustache',
                                                     {'id': str(i), 'number': str(i), 'name': section.title}))
             section_file.close()
-            i += 1
             print('File section.xml for section ' + str(i) + ' created successfully!')
-
+            i += 1
 
         # Add sections count to file course.xml within "course" directory
         if not os.path.exists('Course/course'):
@@ -89,6 +94,7 @@ class CourseExporter:
         course_info_file.write(renderer.render_path('course_info.mustache', {'sections_count': len(sections)}))
 
     def generate_sessions(self, sections):
+        print('\nGenerating sessions...')
         renderer = pystache.Renderer()
         i = 1
         j = 1
@@ -113,7 +119,7 @@ class CourseExporter:
                 page_file.write(renderer.render_path('activity_page.mustache',
                                                      {'id': str(j), 'title': session.title, 'content': session.content}))
                 page_file.close()
-                print('File page.xml for session ' + str(j) + ' created successfully!')
+                print('File page.xml for session ' + str(j) + ' created successfully!\n')
                 j += 1
             i += 1
 
@@ -123,6 +129,7 @@ class CourseExporter:
 
         moodle_backup_file = open("Course/moodle_backup.xml", "wb+")
         moodle_backup_file.write(renderer.render_path('moodle_backup.mustache', {'sessions': self.session_values, 'sections': self.section_values}))
+        print('moodle_backup.xml created.')
 
     def generate_session_base_files(self, sessionid):
         print('Generating session ' + str(sessionid) + ' base files... ')

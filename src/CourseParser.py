@@ -1,6 +1,9 @@
+import urllib
 import urllib2
 import Course
 import CheckUsedTags
+import re
+import os
 import CourseExporter
 from xml.etree import ElementTree
 from Tkinter import Tk
@@ -18,12 +21,19 @@ class ParseXML:
         Tk().withdraw()
         path = askopenfilename()    #File Selection
         #CheckUsedTags.CheckUsedTags(path)
+        print('Getting RSS list from file' + path)
+        self.getimages(path)
+
+        Tk().withdraw()
+        path = askopenfilename()
         print('Getting course from file ' + path)
         course = self.getcourse(path)
         course.coursetofile("CourseOU.txt")
         CP.ContentPreprocessor("coursetemplate.xsl").coursetohtml(course)
         CourseExporter.CourseExporter(course)
         course.coursetofile("CourseOppia.txt")
+
+        print ('\nCourse created successfully!')
 
 
     def getcourse(self, path):
@@ -68,5 +78,44 @@ class ParseXML:
 
         self.sections.append(Course.Section(section_title, sessions))
         print("Success parsing file!\n")
+
+    def getimages(self, path):
+        file = open(path, "r")
+
+        i = 1
+        for rss_url in file:
+            try:
+                print('Requesting file ' + str(i) + '(' + rss_url.rstrip() + ')' + '...')
+                response = urllib2.urlopen(rss_url)
+                rss_file = response.read()
+            except HTTPError as e:
+                print('The server couldn\'t fulfill the request.')
+                print('Error code: ', e.code)
+            except URLError as e:
+                print('We failed to reach a server.')
+                print('Reason: ', e.reason)
+            else:
+                print('Parsing file ' + str(i))
+                self.downloadimages(rss_file)
+                response.close()
+
+    def downloadimages(self, content):
+
+        try:
+            images_list = re.findall('http[s]?://[^\s]*\.jpg', content)
+            for image_url in images_list:
+
+                filename = image_url.split("/")[-1]
+                response = urllib2.urlopen(image_url)
+
+                if not os.path.exists('images'):
+                    os.makedirs('images')
+
+                f = open("images/" + filename, "wb+")
+                f.write(response.read())
+                f.close()
+        except AttributeError:
+            return
+
 
 ParseXML()

@@ -1,5 +1,7 @@
 *.pyc
 *.xml
 *.txt
+*.jpg
+*.zip
 .idea/
 *~
