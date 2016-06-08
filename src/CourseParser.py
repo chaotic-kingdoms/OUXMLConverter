@@ -1,7 +1,6 @@
-import urllib
+
 import urllib2
 import Course
-import CheckUsedTags
 import re
 import os
 import CourseExporter
@@ -10,6 +9,8 @@ from Tkinter import Tk
 from tkFileDialog import askopenfilename
 import ContentPreprocessor as CP
 from urllib2 import HTTPError, URLError
+
+from utils.URLUtils import URLUtils
 
 
 class ParseXML:
@@ -20,7 +21,6 @@ class ParseXML:
     def __init__(self):
         Tk().withdraw()
         path = askopenfilename()    #File Selection
-        #CheckUsedTags.CheckUsedTags(path)
         print('Getting RSS list from file' + path)
         self.getimages(path)
 
@@ -43,6 +43,7 @@ class ParseXML:
         i = 1
         for xml_url in file:
             if "glossary" not in xml_url:
+                xml_url = URLUtils.get_file_url(xml_url, format='xml')
                 try:
                     print('Requesting file ' + str(i) + '(' + xml_url.rstrip() + ')' + '...')
                     response = urllib2.urlopen(xml_url)
