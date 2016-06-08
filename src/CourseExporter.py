@@ -98,7 +98,7 @@ class CourseExporter:
                 self.generate_session_base_files(j)
 
                 self.session_values.append({'sessionid': str(j), 'sectionid': str(i), 'title': session.title.rstrip(),
-                                            'session_directory': 'activities/page_' + str(i)})
+                                            'session_directory': 'activities/page_' + str(j)})
                 if not os.path.exists('Course/activities/page_' + str(j)):
                     os.makedirs("Course/activities/page_" + str(j))
 

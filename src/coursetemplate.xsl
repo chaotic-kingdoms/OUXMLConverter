@@ -10,15 +10,15 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     </xsl:template>
 
     <xsl:template match="Paragraph">
-        &lt;p&gt;<xsl:value-of select="."/><xsl:apply-templates/>&lt;/p&gt;
+        <p><xsl:apply-templates/></p>
     </xsl:template>
 
     <xsl:template match="BulletedList|BulletedSubsidiaryList">
-        &lt;ul&gt;
+        <ul>
             <xsl:for-each select="ListItem">
-                &lt;li&gt;<xsl:value-of select="."/>&lt;/li&gt;
+                <li><xsl:apply-templates/></li>
             </xsl:for-each>
-        &lt;/ul&gt;
+        </ul>
     </xsl:template>
 
     <xsl:template match="NumberedList|NumberedSubsidiaryList">
@@ -31,7 +31,7 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
                 </xsl:choose>
             </xsl:attribute>
             <xsl:for-each select="ListItem">
-                &lt;li&gt;<xsl:value-of select="."/>&lt;/li&gt;
+                <li><xsl:apply-templates/></li>
             </xsl:for-each>
         </ol>
     </xsl:template>
@@ -45,36 +45,43 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     </xsl:template>
 
     <xsl:template match="Caption">
-        &lt;p&gt; class="caption">
+        <p class="caption">
         <xsl:value-of select="."/>
-        &lt;/p&gt;
+        </p>
     </xsl:template>
 
     <xsl:template match="Box">
-        &lt;p class="box activity"&gt;
-        &lt;h2&gt;<xsl:value-of select="Heading"/>&lt;/h2&gt;
+        <p class="box activity">
+        <h2><xsl:value-of select="Heading"/></h2>
         <xsl:apply-templates select="*[not(self::Heading)]"/>
-        &lt;/p&gt;
+        </p>
+    </xsl:template>
+
+    <xsl:template match="CaseStudy">
+        <p class="box casestudy">
+        <h2><xsl:value-of select="Heading"/></h2>
+        <xsl:apply-templates select="*[not(self::Heading)]"/>
+        </p>
     </xsl:template>
 
     <xsl:template match="ITQ">
-        &lt;div class="box question"&gt;
-        &lt;p&gt;<xsl:value-of select="Question"/>&lt;/p&gt;
-        &lt;div name="reveal" id="2" class="reveal"&gt;Show answer&lt;/div&gt;
-        &lt;div style="display:none;" id="answer2"&gt;<xsl:value-of select="Answer"/>&lt;/div&gt;
-        &lt;/div&gt;
+        <div class="box question">
+        <p><xsl:value-of select="Question"/></p>
+        <div name="reveal" id="2" class="reveal">Show answer</div>
+        <div style="display:none;" id="answer2"><xsl:value-of select="Answer"/></div>
+        </div>
     </xsl:template>
 
     <xsl:template match="br">
-        &lt;br/&gt;
+        <br />
     </xsl:template>
 
     <xsl:template match="b">
-        &lt;b&gt;<xsl:value-of select="."/>&lt;/b&gt;
+       <b><xsl:value-of select="."/></b>
     </xsl:template>
 
-    <xsl:template match="i">
-        &lt;i&gt;<xsl:value-of select="."/>&lt;/i&gt;
+    <xsl:template match="i"> 
+        <i><xsl:value-of select="."/></i>
     </xsl:template>
 
 </xsl:stylesheet>
