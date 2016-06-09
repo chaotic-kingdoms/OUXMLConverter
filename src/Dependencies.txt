@@ -1,2 +1,0 @@
-LXML --> https://pypi.python.org/pypi/lxml/3.6.0
-Pystache --> https://pypi.python.org/pypi/pystache

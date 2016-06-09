@@ -1,6 +1,6 @@
 import os
 import pystache
-
+import settings
 
 class CourseExporter:
 
@@ -80,7 +80,7 @@ class CourseExporter:
                 os.makedirs("Course/sections/section_" + str(i))
 
             section_file = open("Course/sections/section_" + str(i) + "/section.xml", "wb+")
-            section_file.write(renderer.render_path('section.mustache',
+            section_file.write(renderer.render_path(os.path.join(settings.TEMPLATES_ROOT, 'section.mustache'),
                                                     {'id': str(i), 'number': str(i), 'name': section.title}))
             section_file.close()
             print('File section.xml for section ' + str(i) + ' created successfully!')
@@ -91,7 +91,8 @@ class CourseExporter:
             os.makedirs("Course/course")
 
         course_info_file = open("Course/course/course.xml", "wb+")
-        course_info_file.write(renderer.render_path('course_info.mustache', {'sections_count': len(sections)}))
+        course_info_file.write(renderer.render_path(os.path.join(settings.TEMPLATES_ROOT, 'course_info.mustache'),
+                                                    {'sections_count': len(sections)}))
 
     def generate_sessions(self, sections):
         print('\nGenerating sessions...')
@@ -110,13 +111,14 @@ class CourseExporter:
 
                 # Create "module.xml" file
                 module_file = open("Course/activities/page_" + str(j) + "/module.xml", "wb+")
-                module_file.write(renderer.render_path('activity_module.mustache', {'id': str(j), 'sectionid': str(i)}))
+                module_file.write(renderer.render_path(os.path.join(settings.TEMPLATES_ROOT, 'activity_module.mustache'),
+                                                       {'id': str(j), 'sectionid': str(i)}))
                 module_file.close()
                 print('File module.xml for session ' + str(j) + ' created successfully!')
 
                 # Create "page.xml" file
                 page_file = open("Course/activities/page_" + str(j) + "/page.xml", "wb+")
-                page_file.write(renderer.render_path('activity_page.mustache',
+                page_file.write(renderer.render_path(os.path.join(settings.TEMPLATES_ROOT, 'activity_page.mustache'),
                                                      {'id': str(j), 'title': session.title, 'content': session.content}))
                 page_file.close()
                 print('File page.xml for session ' + str(j) + ' created successfully!\n')
@@ -128,7 +130,8 @@ class CourseExporter:
         renderer = pystache.Renderer()
 
         moodle_backup_file = open("Course/moodle_backup.xml", "wb+")
-        moodle_backup_file.write(renderer.render_path('moodle_backup.mustache', {'sessions': self.session_values, 'sections': self.section_values}))
+        moodle_backup_file.write(renderer.render_path(os.path.join(settings.TEMPLATES_ROOT, 'moodle_backup.mustache'),
+                                                      {'sessions': self.session_values, 'sections': self.section_values}))
         print('moodle_backup.xml created.')
 
     def generate_session_base_files(self, sessionid):

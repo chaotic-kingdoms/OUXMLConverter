@@ -9,6 +9,7 @@ from Tkinter import Tk
 from tkFileDialog import askopenfilename
 import ContentPreprocessor as CP
 from urllib2 import HTTPError, URLError
+import settings
 
 from utils.URLUtils import URLUtils
 
@@ -20,18 +21,16 @@ class ParseXML:
 
     def __init__(self):
         Tk().withdraw()
-        path = askopenfilename()    #File Selection
-        print('Getting RSS list from file' + path)
-        self.getimages(path)
-
-        Tk().withdraw()
         path = askopenfilename()
         print('Getting course from file ' + path)
+        print('\nGetting images from RSS files')
+        #self.getimages(path)
+        print('\nGetting contents from XML files')
         course = self.getcourse(path)
-        course.coursetofile("CourseOU.txt")
-        CP.ContentPreprocessor("coursetemplate.xsl").coursetohtml(course)
+        #course.coursetofile("CourseOU.txt")
+        CP.ContentPreprocessor(settings.XSL_FILE).coursetohtml(course)
         CourseExporter.CourseExporter(course)
-        course.coursetofile("CourseOppia.txt")
+        #course.coursetofile("CourseOppia.txt")
 
         print ('\nCourse created successfully!')
 
@@ -41,11 +40,11 @@ class ParseXML:
         file = open(path, "r")
 
         i = 1
-        for xml_url in file:
-            if "glossary" not in xml_url:
-                xml_url = URLUtils.get_file_url(xml_url, format='xml')
+        for url in file:
+            if "glossary" not in url:
+                xml_url = URLUtils.get_file_url(url, format='xml')
                 try:
-                    print('Requesting file ' + str(i) + '(' + xml_url.rstrip() + ')' + '...')
+                    print('Requesting file ' + str(i) + '(' + xml_url.rstrip() + ')')
                     response = urllib2.urlopen(xml_url)
                     section_xml = response.read()
                 except HTTPError as e:
@@ -55,7 +54,7 @@ class ParseXML:
                     print('We failed to reach a server.')
                     print('Reason: ', e.reason)
                 else:
-                    print('Parsing file ' + str(i))
+                    print('Parsing file ' + str(i) + '...')
                     self.parsexml(section_xml)
                     response.close()
             i += 1
@@ -84,21 +83,24 @@ class ParseXML:
         file = open(path, "r")
 
         i = 1
-        for rss_url in file:
-            try:
-                print('Requesting file ' + str(i) + '(' + rss_url.rstrip() + ')' + '...')
-                response = urllib2.urlopen(rss_url)
-                rss_file = response.read()
-            except HTTPError as e:
-                print('The server couldn\'t fulfill the request.')
-                print('Error code: ', e.code)
-            except URLError as e:
-                print('We failed to reach a server.')
-                print('Reason: ', e.reason)
-            else:
-                print('Parsing file ' + str(i))
-                self.downloadimages(rss_file)
-                response.close()
+        for url in file:
+            if "glossary" not in url:
+                rss_url = URLUtils.get_file_url(url, 'rss')
+                try:
+                    print('Requesting file ' + str(i) + '(' + rss_url.rstrip() + ')')
+                    response = urllib2.urlopen(rss_url)
+                    rss_file = response.read()
+                except HTTPError as e:
+                    print('The server couldn\'t fulfill the request.')
+                    print('Error code: ', e.code)
+                except URLError as e:
+                    print('We failed to reach a server.')
+                    print('Reason: ', e.reason)
+                else:
+                    print('Getting images from file ' + str(i) + '...')
+                    self.downloadimages(rss_file)
+                    response.close()
+            i += 1
 
     def downloadimages(self, content):
 
