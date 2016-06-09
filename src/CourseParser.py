@@ -104,15 +104,15 @@ class ParseXML:
 
     def downloadimages(self, content):
 
+        if not os.path.exists('images'):
+            os.makedirs('images')
+
         try:
             images_list = re.findall('http[s]?://[^\s]*\.jpg', content)
             for image_url in images_list:
 
                 filename = image_url.split("/")[-1]
                 response = urllib2.urlopen(image_url)
-
-                if not os.path.exists('images'):
-                    os.makedirs('images')
 
                 f = open("images/" + filename, "wb+")
                 f.write(response.read())
