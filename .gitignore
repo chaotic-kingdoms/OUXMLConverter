@@ -1,7 +1,6 @@
 *.pyc
-*.xml
-*.txt
-*.jpg
-*.zip
+*.txt  
 .idea/
+src/Course
+src/images
 *~
