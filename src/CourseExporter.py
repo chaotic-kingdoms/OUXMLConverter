@@ -25,8 +25,8 @@ class CourseExporter:
         """ Create all the base files needed to restore the course. """
         print('\nGenerating course base files...')
 
-        if not os.path.exists('Course'):
-            os.makedirs('Course')
+        if not os.path.exists('Course/course'):
+            os.makedirs('Course/course')
 
         self.generate_roles_files()
         self.generate_groups_file()
@@ -94,9 +94,6 @@ class CourseExporter:
             i += 1
 
         # Add sections count to file course.xml within "course" directory
-        if not os.path.exists('Course/course'):
-            os.makedirs("Course/course")
-
         course_info_file = open("Course/course/course.xml", "wb+")
         course_info_file.write(renderer.render_path(os.path.join(settings.TEMPLATES_ROOT, 'course_info.mustache'),
                                                     {'sections_count': len(sections)}))
@@ -109,12 +106,12 @@ class CourseExporter:
         for section in sections:
             for session in section.sessions:
 
-                self.generate_session_base_files(j)
-
                 self.session_values.append({'sessionid': str(j), 'sectionid': str(i), 'title': session.title.rstrip(),
                                             'session_directory': 'activities/page_' + str(j)})
                 if not os.path.exists('Course/activities/page_' + str(j)):
                     os.makedirs("Course/activities/page_" + str(j))
+
+                self.generate_session_base_files(j)
 
                 # Create "module.xml" file
                 module_file = open("Course/activities/page_" + str(j) + "/module.xml", "wb+")
