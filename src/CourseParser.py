@@ -24,7 +24,7 @@ class ParseXML:
         path = askopenfilename()
         print('Getting course from file ' + path)
         print('\nGetting images from RSS files')
-        #self.getimages(path)
+        self.getimages(path)
         print('\nGetting contents from XML files')
         course = self.getcourse(path)
         #course.coursetofile("CourseOU.txt")

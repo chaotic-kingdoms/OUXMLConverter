@@ -1,15 +1,25 @@
 import os
+from os import listdir
+from os import walk
 import pystache
 import settings
+import hashlib
+from shutil import move
 
 class CourseExporter:
 
     section_values = []
     session_values = []
+    files_values = []
 
     def __init__(self, course):
         print('\nExporting course to Oppia format...')
         self.generate_base_course(course)
+        self.generate_sections(course.sections)
+        self.generate_sessions(course.sections)
+        self.generate_moodle_backup_info()
+        self.generate_files_folder()
+        self.generate_files_file()
 
     def generate_base_course(self, course):
         """ Create all the base files needed to restore the course. """
@@ -24,9 +34,6 @@ class CourseExporter:
         self.generate_questions_file()
         self.generate_scales_file()
 
-        self.generate_sections(course.sections)
-        self.generate_sessions(course.sections)
-        self.generate_moodle_backup_info()
 
     def generate_roles_files(self):
         f = open("Course/course/roles.xml", "wb+")
@@ -156,3 +163,34 @@ class CourseExporter:
         roles_file = open('Course/activities/page_' + str(sessionid) + '/roles.xml', "wb+")
         roles_file.write('<?xml version="1.0" encoding="UTF-8"?>\n<roles>\n<role_overrides></role_overrides>\n<role_assignments></role_assignments>\n</roles>')
         roles_file.close()
+
+    def generate_files_folder(self):
+        if os.path.exists('Course/files'):
+            try:
+                os.remove(os.path('Course/files'))
+            except Exception as e:
+                print e
+        else:
+            os.makedirs('Course/files')
+
+        images_folder = os.path.join(settings.PROJECT_ROOT, 'images')
+        i = 1
+        for image_file in listdir(images_folder):
+            new_filename = hashlib.sha1(image_file).hexdigest()
+            self.files_values.append({'fileid': str(i), 'file_hash': new_filename, 'contextid': str(0),
+                                        'filename': image_file})
+
+            os.rename(os.path.join(images_folder, image_file), os.path.join(images_folder, new_filename))
+            filepath = os.path.join('Course/files', new_filename[:2])
+            if not os.path.exists(filepath):
+                os.makedirs(filepath)
+            move(os.path.join(images_folder, new_filename), os.path.join(settings.PROJECT_ROOT, filepath, new_filename))
+            i += 1
+
+    def generate_files_file(self):
+        """ Generate the file files.xml"""
+        renderer = pystache.Renderer()
+
+        files_file = open("Course/files.xml", "wb+")
+        files_file.write(renderer.render_path(os.path.join(settings.TEMPLATES_ROOT, 'files.mustache'),
+                                              {'files': self.files_values}))
