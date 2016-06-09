@@ -1,5 +1,8 @@
 
 import urllib2
+
+import sys
+
 import Course
 import re
 import os
@@ -85,9 +88,18 @@ class ParseXML:
         i = 1
         for url in file:
             if "glossary" not in url:
+
+                print 'Section '+str(i)+':\n  > getting RSS link from url...',
                 rss_url = URLUtils.get_file_url(url, 'rss')
+                if rss_url is None:
+                    print 'RSS link not found in URL.'
+                    continue
+                else:
+                    print 'Done.'
+
                 try:
-                    print('Requesting file ' + str(i) + '(' + rss_url.rstrip() + ')')
+                    #print('Requesting file ' + str(i) + '(' + rss_url.rstrip() + ')')
+                    print '  > Downloading RSS file...',
                     response = urllib2.urlopen(rss_url)
                     rss_file = response.read()
                 except HTTPError as e:
@@ -97,26 +109,43 @@ class ParseXML:
                     print('We failed to reach a server.')
                     print('Reason: ', e.reason)
                 else:
-                    print('Getting images from file ' + str(i) + '...')
+                    print "Done."
                     self.downloadimages(rss_file)
                     response.close()
             i += 1
 
     def downloadimages(self, content):
 
-        if not os.path.exists('images'):
-            os.makedirs('images')
 
         try:
             images_list = re.findall('http[s]?://[^\s]*\.jpg', content)
-            for image_url in images_list:
+            if len(images_list) == 0:
+                print '  > No images to download.'
+                return
+            else:
 
+                if not os.path.exists('images'):
+                    os.makedirs('images')
+
+                print '  > Getting images from RSS file content... '
+
+            i = 0
+            for image_url in images_list:
+                progress = str(i * 100 / len(images_list) ) + '%'
+                print '\r  > Downloading images (' + progress + ')',
+                sys.stdout.flush()
                 filename = image_url.split("/")[-1]
                 response = urllib2.urlopen(image_url)
+
+                if not os.path.exists('images'):
+                    os.makedirs('images')
 
                 f = open("images/" + filename, "wb+")
                 f.write(response.read())
                 f.close()
+
+                i+=1
+            print '\r  > Downloading images (100%). Done.'
         except AttributeError:
             return
 
