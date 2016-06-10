@@ -136,7 +136,7 @@ class CourseExporter:
                 inforef_file.close()
 
                 # Create "page.xml" file
-                if files is not None:
+                if files:
                     print files
                     print files[0]
                     session.content = session.content.replace("<img src=\"\"", "<img src=\"@@PLUGINFILE@@/" + files[0]['filename'] + "\"")

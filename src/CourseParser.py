@@ -159,6 +159,7 @@ class ParseXML:
                     j += 1
                 print '\r  > Downloading images (100%). Done.'
                 i += 1
+                contextid += 1
             except AttributeError:
                 return
         return contextid

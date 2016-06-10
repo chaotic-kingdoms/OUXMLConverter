@@ -38,8 +38,8 @@
 
     <xsl:template match="Image">
         <img>
-            <xsl:attribute name="src"><xsl:value-of select="."/></xsl:attribute>
-            <xsl:attribute name="width">100%</xsl:attribute>
+            <xsl:attribute name="src"><xsl:value-of select="@src"/></xsl:attribute>
+            <xsl:attribute name="width">200</xsl:attribute>
         </img>
     </xsl:template>
 
