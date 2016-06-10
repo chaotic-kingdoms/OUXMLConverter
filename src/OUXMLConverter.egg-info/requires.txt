@@ -1,0 +1,4 @@
+lxml
+pystache
+cssselect
+requests

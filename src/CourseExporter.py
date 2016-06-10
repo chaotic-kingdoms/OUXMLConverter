@@ -1,6 +1,7 @@
 import os
 from os import listdir
 from os import walk
+import re
 import pystache
 import settings
 import hashlib
@@ -11,15 +12,18 @@ class CourseExporter:
     section_values = []
     session_values = []
     files_values = []
+    images = {} # Key:filename, value:contextid
 
-    def __init__(self, course):
+    def __init__(self, course, images):
         print('\nExporting course to Oppia format...')
+        self.images = images
+        print images
         self.generate_base_course(course)
+        self.generate_files_folder()
+        self.generate_files_file()
         self.generate_sections(course.sections)
         self.generate_sessions(course.sections)
         self.generate_moodle_backup_info()
-        self.generate_files_folder()
-        self.generate_files_file()
 
     def generate_base_course(self, course):
         """ Create all the base files needed to restore the course. """
@@ -120,12 +124,28 @@ class CourseExporter:
                 module_file.close()
                 print('File module.xml for session ' + str(j) + ' created successfully!')
 
+                # Create "inforef.xml" file
+                files = []
+                for file in self.files_values:
+                    if file['contextid'] == j:
+                        files.append(file)
+
+                inforef_file = open('Course/activities/page_' + str(j) + '/inforef.xml', "wb+")
+                inforef_file.write(renderer.render_path(os.path.join(settings.TEMPLATES_ROOT, 'inforef.mustache'),
+                                                        {'files': files, 'fileid': str(j)}))
+                inforef_file.close()
+
                 # Create "page.xml" file
+                if files is not None:
+                    print files
+                    print files[0]
+                    session.content = session.content.replace("<img src=\"\"", "<img src=\"@@PLUGINFILE@@/" + files[0]['filename'] + "\"")
                 page_file = open("Course/activities/page_" + str(j) + "/page.xml", "wb+")
                 page_file.write(renderer.render_path(os.path.join(settings.TEMPLATES_ROOT, 'activity_page.mustache'),
                                                      {'id': str(j), 'title': session.title, 'content': session.content}))
                 page_file.close()
                 print('File page.xml for session ' + str(j) + ' created successfully!\n')
+
                 j += 1
             i += 1
 
@@ -151,10 +171,6 @@ class CourseExporter:
         grades_file.write('<?xml version="1.0" encoding="UTF-8"?>\n<activity_gradebook>\n<grade_items></grade_items>\n<grade_letters></grade_letters>\n</activity_gradebook>')
         grade_history_file.close()
 
-        # Create inforef.xml file
-        inforef_file = open('Course/activities/page_' + str(sessionid) + '/inforef.xml', "wb+")
-        inforef_file.write('<?xml version="1.0" encoding="UTF-8"?>\n<inforef></inforef>')
-        inforef_file.close()
 
         # Create roles.xml file
         roles_file = open('Course/activities/page_' + str(sessionid) + '/roles.xml', "wb+")
@@ -174,7 +190,8 @@ class CourseExporter:
         i = 1
         for image_file in listdir(images_folder):
             new_filename = hashlib.sha1(image_file).hexdigest()
-            self.files_values.append({'fileid': str(i), 'file_hash': new_filename, 'contextid': str(0),
+            contextid = self.images[image_file]
+            self.files_values.append({'fileid': str(i), 'file_hash': new_filename, 'contextid': contextid,
                                         'filename': image_file})
 
             os.rename(os.path.join(images_folder, image_file), os.path.join(images_folder, new_filename))
