@@ -22,9 +22,7 @@ class ParseXML:
     course_title = ""
     sections = []
 
-    def __init__(self):
-        Tk().withdraw()
-        path = askopenfilename()
+    def __init__(self, path):
         print('Getting course from file ' + path)
         print('\nGetting images from RSS files')
         self.getimages(path)
@@ -163,6 +161,9 @@ class ParseXML:
             except AttributeError:
                 return
 
-
-
-ParseXML()
+print str(len(sys.argv))
+if len(sys.argv) != 2:
+    print 'Wrong number of arguments.'
+    print 'Usage: TO-DO'
+else:
+    ParseXML(str(sys.argv[1]))
