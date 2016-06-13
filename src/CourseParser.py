@@ -45,7 +45,7 @@ class ParseXML:
         i = 1
         for url in file:
             if "glossary" not in url:
-                xml_url = URLUtils.get_file_url(url, format='xml')
+                xml_url = URLUtils.get_file_url(url)
                 try:
                     print('Requesting file ' + str(i) + '(' + xml_url.rstrip() + ')')
                     response = urllib2.urlopen(xml_url)
@@ -57,7 +57,7 @@ class ParseXML:
                     print('We failed to reach a server.')
                     print('Reason: ', e.reason)
                 else:
-                    print('Parsing file ' + str(i) + '...')
+                    print('Section ' + str(i) + ':')
                     self.parsexml(section_xml)
                     response.close()
             i += 1
@@ -73,14 +73,21 @@ class ParseXML:
         section_title = ElementTree.tostring(element.find('ItemTitle'), 'utf8', 'xml')
 
         sessions = []
+        i = 1
+        session_count = len(element.findall('.//Session'))
         for session in element.iter('Session'):
+            if session_count != 0:
+                progress = str(i * 100 / session_count) + '%'
+                print '\r > Parsing Sessions (' + str(i) + '/' + str(session_count) + ' - ' + progress + ').',
+                sys.stdout.flush()
             session_title = ElementTree.tostring(session.find('Title'), 'utf8', 'xml')
             session.remove(session.find('Title'))
             content = ElementTree.tostring(session, 'utf8', 'xml')
             sessions.append(Course.Session(session_title, content))
+            i += 1
 
         self.sections.append(Course.Section(section_title, sessions))
-        print("Success parsing file!\n")
+        print 'Done.\n'
 
     def getimages(self, path):
         file = open(path, "r")
@@ -89,7 +96,7 @@ class ParseXML:
         for url in file:
             if "glossary" not in url:
 
-                print 'Section '+str(i)+':\n  > getting RSS link from url...',
+                print 'Section '+str(i)+':\n  > Getting RSS link from url...',
                 rss_url = URLUtils.get_file_url(url, 'rss')
                 if rss_url is None:
                     print 'RSS link not found in URL.'
@@ -120,7 +127,7 @@ class ParseXML:
         i = 1
         for session in element.iter('item'):
             try:
-                print '  Session ' + str(i)
+                print '  Session ' + str(i) + ":"
                 description = session.find('description')
                 #print description.text
                 images_list = re.findall('http[s]?://[^\s]*\.jpg', ElementTree.tostring(description, 'utf8', 'xml'))

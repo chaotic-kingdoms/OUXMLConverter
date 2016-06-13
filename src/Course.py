@@ -34,7 +34,6 @@ class Section:
     def __init__(self, title, sessions):
         self.title = title
         self.sessions = sessions
-        print ('Section created successfully!')
 
 class Session:
 
@@ -44,4 +43,3 @@ class Session:
     def __init__(self, title, content):
         self.title = title
         self.content = content
-        print ('Session created successfully!')

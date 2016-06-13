@@ -6,6 +6,8 @@ import pystache
 import settings
 import hashlib
 from shutil import move
+import time
+import sys
 
 class CourseExporter:
 
@@ -37,40 +39,46 @@ class CourseExporter:
 
 
     def generate_roles_files(self):
+        print('  > Creating Course/course/roles.xml... '),
         f = open("Course/course/roles.xml", "wb+")
         f.write('<?xml version="1.0" encoding="UTF-8"?>\n<roles><role_overrides>'
                 '</role_overrides><role_assignments></role_assignments></roles>')
         f.close()
-        print('Course/course/roles.xml created.')
+        print 'Done.'
 
+        print('  > Creating Course/roles.xml... '),
         f = open("Course/roles.xml", "wb+")
         f.write('<?xml version="1.0" encoding="UTF-8"?>\n<roles_definition></roles_definition>')
         f.close()
-        print('Course/roles.xml created. ')
+        print 'Done.'
 
     def generate_groups_file(self):
+        print('  > Creating goups.xml... '),
         f = open("Course/groups.xml", "wb+")
         f.write('<?xml version="1.0" encoding="UTF-8"?>\n<groups></groups>')
         f.close()
-        print('goups.xml created.')
+        print 'Done.'
 
     def generate_outcomes_file(self):
+        print('  > Creating outcomes.xml... '),
         f = open("Course/outcomes.xml", "wb+")
         f.write('<?xml version="1.0" encoding="UTF-8"?>\n<outcomes_definition></outcomes_definition>')
         f.close()
-        print('outcomes.xml created.')
+        print 'Done.'
 
     def generate_questions_file(self):
+        print('  > Creating questions.xml... '),
         f = open("Course/questions.xml", "wb+")
         f.write('<?xml version="1.0" encoding="UTF-8"?>\n<question_categories></question_categories>')
         f.close()
-        print('questions.xml created.')
+        print 'Done.'
 
     def generate_scales_file(self):
+        print('  > Creating scales.xml... '),
         f = open("Course/scales.xml", "wb+")
         f.write('<?xml version="1.0" encoding="UTF-8"?>\n<scales_definition></scales_definition>')
         f.close()
-        print('scales.xml created.')
+        print 'Done.'
 
     def generate_sections(self, sections):
         """ Generate all the files that include information about the sections"""
@@ -81,6 +89,9 @@ class CourseExporter:
         # Create section.xml files within the "sections" directory
         i = 1
         for section in sections:
+            progress = str(i * 100 / len(sections)) + '%'
+            print '\r  > Generating sections (' + progress + ')',
+            sys.stdout.flush()
             #Information of sections for "moodle_backup.xml" file
             self.section_values.append({'sectionid': str(i), 'section_directory': 'sections/section_' + str(i)})
 
@@ -91,8 +102,8 @@ class CourseExporter:
             section_file.write(renderer.render_path(os.path.join(settings.TEMPLATES_ROOT, 'section.mustache'),
                                                     {'id': str(i), 'number': str(i), 'name': section.title}))
             section_file.close()
-            print('File section.xml for section ' + str(i) + ' created successfully!')
             i += 1
+        print '\r  > Generating sections (100%). Done.'
 
         # Add sections count to file course.xml within "course" directory
         course_info_file = open("Course/course/course.xml", "wb+")
@@ -105,8 +116,11 @@ class CourseExporter:
         i = 1
         j = 1
         for section in sections:
+            print("Section " + str(i) + ":")
             for session in section.sessions:
-
+                progress = str(j * 100 / len(section.sessions)) + '%'
+                print '\r  > Generating sessions (' + progress + ')',
+                sys.stdout.flush()
                 self.session_values.append({'sessionid': str(j), 'sectionid': str(i), 'title': session.title.rstrip(),
                                             'session_directory': 'activities/page_' + str(j)})
                 if not os.path.exists('Course/activities/page_' + str(j)):
@@ -119,7 +133,6 @@ class CourseExporter:
                 module_file.write(renderer.render_path(os.path.join(settings.TEMPLATES_ROOT, 'activity_module.mustache'),
                                                        {'id': str(j), 'sectionid': str(i)}))
                 module_file.close()
-                print('File module.xml for session ' + str(j) + ' created successfully!')
 
 
                 # Create "page.xml" file
@@ -135,7 +148,6 @@ class CourseExporter:
                 page_file.write(renderer.render_path(os.path.join(settings.TEMPLATES_ROOT, 'activity_page.mustache'),
                                                      {'id': str(j), 'title': session.title, 'content': new_content}))
                 page_file.close()
-                print('File page.xml for session ' + str(j) + ' created successfully!\n')
 
                 # Create "inforef.xml" file
                 files = []
@@ -147,21 +159,22 @@ class CourseExporter:
                 inforef_file.write(renderer.render_path(os.path.join(settings.TEMPLATES_ROOT, 'inforef.mustache'),
                                                         {'files': files, 'fileid': str(j)}))
                 inforef_file.close()
-
                 j += 1
+            print '\r  > Generating sessions (100%). Done.'
             i += 1
 
     def generate_moodle_backup_info(self):
         """ Generate the file moodle_backup.xml"""
+        print('\nCreating moodle_backup.xml... '),
+        sys.stdout.flush()
         renderer = pystache.Renderer()
 
         moodle_backup_file = open("Course/moodle_backup.xml", "wb+")
         moodle_backup_file.write(renderer.render_path(os.path.join(settings.TEMPLATES_ROOT, 'moodle_backup.mustache'),
                                                       {'sessions': self.session_values, 'sections': self.section_values}))
-        print('moodle_backup.xml created.')
+        print 'Done.'
 
     def generate_session_base_files(self, sessionid):
-        print('Generating session ' + str(sessionid) + ' base files... ')
 
         # Create grade_history.xml file
         grade_history_file = open('Course/activities/page_' + str(sessionid) + '/grade_history.xml', "wb+")
@@ -172,7 +185,6 @@ class CourseExporter:
         grades_file = open('Course/activities/page_' + str(sessionid) + '/grades.xml', "wb+")
         grades_file.write('<?xml version="1.0" encoding="UTF-8"?>\n<activity_gradebook>\n<grade_items></grade_items>\n<grade_letters></grade_letters>\n</activity_gradebook>')
         grade_history_file.close()
-
 
         # Create roles.xml file
         roles_file = open('Course/activities/page_' + str(sessionid) + '/roles.xml', "wb+")
@@ -192,9 +204,7 @@ class CourseExporter:
         i = 1
         for image_file in listdir(images_folder):
             new_filename = hashlib.sha1(image_file).hexdigest()
-
-            print image_file
-            self.files_values.append({'fileid': str(i), 'filename': image_file, 'file_hash': new_filename})
+            self.files_values.append({'fileid': str(i), 'filename': image_file, 'file_hash': new_filename, 'timecreated': int(time.time())})
 
             os.rename(os.path.join(images_folder, image_file), os.path.join(images_folder, new_filename))
             filepath = os.path.join('Course/files', new_filename[:2])
