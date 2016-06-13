@@ -21,7 +21,6 @@ class ParseXML:
 
     course_title = ""
     sections = []
-    images = {} # Key:filename, value:contextid
 
     def __init__(self):
         Tk().withdraw()
@@ -33,7 +32,7 @@ class ParseXML:
         course = self.getcourse(path)
         #course.coursetofile("CourseOU.txt")
         CP.ContentPreprocessor(settings.XSL_FILE).coursetohtml(course)
-        CourseExporter.CourseExporter(course, self.images)
+        CourseExporter.CourseExporter(course)
         #course.coursetofile("CourseOppia.txt")
 
         print ('\nCourse created successfully!')
@@ -87,7 +86,6 @@ class ParseXML:
         file = open(path, "r")
 
         i = 1
-        contextid = 1
         for url in file:
             if "glossary" not in url:
 
@@ -112,17 +110,15 @@ class ParseXML:
                     print('Reason: ', e.reason)
                 else:
                     print "Done."
-                    contextid = self.downloadimages(rss_file, contextid)
+                    contextid = self.downloadimages(rss_file)
                     response.close()
             i += 1
 
-    def downloadimages(self, content, contextid):
+    def downloadimages(self, content):
         element = ElementTree.fromstring(content)
 
         i = 1
         for session in element.iter('item'):
-
-            print "Contextid " + str(contextid)
             try:
                 print '  Session ' + str(i)
                 description = session.find('description')
@@ -131,7 +127,6 @@ class ParseXML:
                 if len(images_list) == 0:
                     print '  > No images to download.'
                     i += 1
-                    contextid += 1
                     continue
                 else:
 
@@ -142,11 +137,10 @@ class ParseXML:
 
                 j = 0
                 for image_url in images_list:
-                    progress = str(j * 100 / len(images_list) ) + '%'
+                    progress = str(j * 100 / len(images_list)) + '%'
                     print '\r  > Downloading images (' + progress + ')',
                     sys.stdout.flush()
-                    filename = image_url.split("/")[-1]
-                    self.images[filename] = contextid
+                    filename = image_url.split("/")[-1].replace(".small", "")
                     response = urllib2.urlopen(image_url)
 
                     if not os.path.exists('images'):
@@ -159,10 +153,8 @@ class ParseXML:
                     j += 1
                 print '\r  > Downloading images (100%). Done.'
                 i += 1
-                contextid += 1
             except AttributeError:
                 return
-        return contextid
 
 
 
