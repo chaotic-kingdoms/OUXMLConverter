@@ -124,25 +124,25 @@ class ParseXML:
         i = 1
         for session in element.iter('item'):
             try:
-                print '  Session ' + str(i) + ":"
+                print '* Session ' + str(i) + ":",
                 description = session.find('description')
                 #print description.text
                 images_list = re.findall('http[s]?://[^\s]*\.(?:jpg|JPG|png|PNG|jpeg|JPEG)', ElementTree.tostring(description, 'utf8', 'xml'))
                 if len(images_list) == 0:
-                    print '  > No images to download.'
+                    print 'No images to download.'
                     i += 1
                     continue
                 else:
-
+                    print
                     if not os.path.exists('images'):
                         os.makedirs('images')
 
-                    print '  > Getting images from RSS file content... '
+                    print '   > Getting images from RSS file content... '
 
                 j = 0
                 for image_url in images_list:
                     progress = str(j * 100 / len(images_list)) + '%'
-                    print '\r  > Downloading images (' + progress + ')',
+                    print '\r   > Downloading images (' + progress + ')',
                     sys.stdout.flush()
                     filename = image_url.split("/")[-1].replace(".small", "")
                     response = urllib2.urlopen(image_url)
@@ -155,7 +155,7 @@ class ParseXML:
                     f.close()
 
                     j += 1
-                print '\r  > Downloading images (100%). Done.'
+                print '\r   > Downloading images (100%). Done.'
                 i += 1
             except AttributeError:
                 return
