@@ -251,7 +251,7 @@ class CourseExporter:
         shutil.rmtree("Course", onerror=self.readonly_handler)
         return filename
 
-    def readonly_handler(func, path, execinfo):
+    def readonly_handler(func, path):
         os.chmod(path, 128)
         func(path)
 

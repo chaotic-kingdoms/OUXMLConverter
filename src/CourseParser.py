@@ -8,11 +8,11 @@ import re
 import os
 import CourseExporter
 from xml.etree import ElementTree
-import ContentPreprocessor as CP
 from urllib2 import HTTPError, URLError
 import settings
 
 from utils.URLUtils import URLUtils
+from ContentPreprocessor import ContentPreprocessor as CP
 
 
 class ParseXML:
@@ -27,7 +27,8 @@ class ParseXML:
         print('\nGetting contents from XML files')
         course = self.getcourse(input_path)
         #course.coursetofile("CourseOU.txt")
-        CP.ContentPreprocessor(settings.XSL_FILE).coursetohtml(course)
+        CP.course_to_html(course, settings.XSL_FILE)
+        CP.optimize_images()
         CourseExporter.CourseExporter(course, output_path)
         #course.coursetofile("CourseOppia.txt")
 
@@ -159,7 +160,6 @@ class ParseXML:
             except AttributeError:
                 return
 
-print str(len(sys.argv))
 if len(sys.argv) != 3:
     print 'Wrong number of arguments.'
     print 'Usage: TO-DO'

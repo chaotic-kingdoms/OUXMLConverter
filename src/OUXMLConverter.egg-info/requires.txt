@@ -2,3 +2,4 @@ lxml
 pystache
 cssselect
 requests
+Pil
