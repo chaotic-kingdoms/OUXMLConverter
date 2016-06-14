@@ -8,8 +8,6 @@ import re
 import os
 import CourseExporter
 from xml.etree import ElementTree
-from Tkinter import Tk
-from tkFileDialog import askopenfilename
 import ContentPreprocessor as CP
 from urllib2 import HTTPError, URLError
 import settings
@@ -22,23 +20,23 @@ class ParseXML:
     course_title = ""
     sections = []
 
-    def __init__(self, path):
-        print('Getting course from file ' + path)
+    def __init__(self, input_path, output_path):
+        print('Getting course from file ' + input_path)
         print('\nGetting images from RSS files')
-        self.getimages(path)
+        self.getimages(input_path)
         print('\nGetting contents from XML files')
-        course = self.getcourse(path)
+        course = self.getcourse(input_path)
         #course.coursetofile("CourseOU.txt")
         CP.ContentPreprocessor(settings.XSL_FILE).coursetohtml(course)
-        CourseExporter.CourseExporter(course)
+        CourseExporter.CourseExporter(course, output_path)
         #course.coursetofile("CourseOppia.txt")
 
         print ('\nCourse created successfully!')
 
 
-    def getcourse(self, path):
+    def getcourse(self, input_path):
         """ Get the course from a .txt that contains the URLs to the xml files of the course sections"""
-        file = open(path, "r")
+        file = open(input_path, "r")
 
         i = 1
         for url in file:
@@ -87,8 +85,8 @@ class ParseXML:
         self.sections.append(Course.Section(section_title, sessions))
         print 'Done.\n'
 
-    def getimages(self, path):
-        file = open(path, "r")
+    def getimages(self, input_path):
+        file = open(input_path, "r")
 
         i = 1
         for url in file:
@@ -128,7 +126,7 @@ class ParseXML:
                 print '  Session ' + str(i) + ":"
                 description = session.find('description')
                 #print description.text
-                images_list = re.findall('http[s]?://[^\s]*\.jpg', ElementTree.tostring(description, 'utf8', 'xml'))
+                images_list = re.findall('http[s]?://[^\s]*\.(?:jpg|JPG|png|PNG|jpeg|JPEG)', ElementTree.tostring(description, 'utf8', 'xml'))
                 if len(images_list) == 0:
                     print '  > No images to download.'
                     i += 1
@@ -162,8 +160,8 @@ class ParseXML:
                 return
 
 print str(len(sys.argv))
-if len(sys.argv) != 2:
+if len(sys.argv) != 3:
     print 'Wrong number of arguments.'
     print 'Usage: TO-DO'
 else:
-    ParseXML(str(sys.argv[1]))
+    ParseXML(str(sys.argv[1]), str(sys.argv[2]))

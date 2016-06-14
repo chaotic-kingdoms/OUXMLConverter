@@ -1,7 +1,7 @@
 try:
     from setuptools import setup
 
-    install_requires = ['lxml', 'pystache', 'cssselect', 'requests']
+    install_requires = ['lxml', 'pystache', 'cssselect', 'requests', 'pillow']
 
     kws = {'install_requires': install_requires}
 except ImportError:

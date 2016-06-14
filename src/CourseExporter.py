@@ -5,17 +5,24 @@ import re
 import pystache
 import settings
 import hashlib
-from shutil import move
+import shutil
 import time
 import sys
+import tarfile
+import zipfile
 
 class CourseExporter:
+
+    compress_types = [
+        'mbz',
+        'zip'
+    ]
 
     section_values = []
     session_values = []
     files_values = []
 
-    def __init__(self, course):
+    def __init__(self, course, output_path):
         print('\nExporting course to Oppia format...')
         self.generate_base_course(course)
         self.generate_files_folder()
@@ -23,6 +30,10 @@ class CourseExporter:
         self.generate_sections(course.sections)
         self.generate_files_file()
         self.generate_moodle_backup_info()
+
+        filename = self.compress_course()
+        self.export_course(filename, output_path)
+
 
     def generate_base_course(self, course):
         """ Create all the base files needed to restore the course. """
@@ -36,7 +47,6 @@ class CourseExporter:
         self.generate_outcomes_file()
         self.generate_questions_file()
         self.generate_scales_file()
-
 
     def generate_roles_files(self):
         print('  > Creating Course/course/roles.xml... '),
@@ -210,8 +220,10 @@ class CourseExporter:
             filepath = os.path.join('Course/files', new_filename[:2])
             if not os.path.exists(filepath):
                 os.makedirs(filepath)
-            move(os.path.join(images_folder, new_filename), os.path.join(settings.PROJECT_ROOT, filepath, new_filename))
+            shutil.move(os.path.join(images_folder, new_filename), os.path.join(settings.PROJECT_ROOT, filepath, new_filename))
             i += 1
+
+        shutil.rmtree("images", onerror=self.readonly_handler)
 
     def generate_files_file(self):
         """ Generate the file files.xml"""
@@ -220,3 +232,30 @@ class CourseExporter:
         files_file = open("Course/files.xml", "wb+")
         files_file.write(renderer.render_path(os.path.join(settings.TEMPLATES_ROOT, 'files.mustache'),
                                               {'files': self.files_values}))
+
+    def compress_course(self, type='mbz'):
+        source_path = os.path.join(settings.PROJECT_ROOT, "Course")
+        if type == 'mbz':
+            filename = "course.mbz"
+            with tarfile.open(filename, "w:gz") as tar:
+                for file in listdir(source_path):
+                    tar.add(os.path.join("Course", file), arcname=file)
+                tar.close()
+        elif type == 'zip':
+            filename = "course.zip"
+            with zipfile(filename, 'w') as zip:
+                for file in listdir(source_path):
+                    zip.write(os.path.join("Course", file))
+                zip.close()
+
+        shutil.rmtree("Course", onerror=self.readonly_handler)
+        return filename
+
+    def readonly_handler(func, path, execinfo):
+        os.chmod(path, 128)
+        func(path)
+
+    def export_course(self, filename, output_path):
+        if not os.path.exists(output_path):
+            os.makedirs(output_path)
+        shutil.move(os.path.join(settings.PROJECT_ROOT, filename), os.path.join(output_path, filename))
