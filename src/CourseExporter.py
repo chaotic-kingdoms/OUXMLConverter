@@ -11,85 +11,71 @@ from datetime import datetime as DT
 import sys
 import tarfile
 import zipfile
+import stat
+from distutils.dir_util import copy_tree
 
 class CourseExporter:
-
-    compress_types = [
-        'mbz',
-        'zip'
-    ]
 
     section_values = []
     session_values = []
     files_values = []
 
     def __init__(self, course, output_path):
+        self.export_course(course, output_path)
+        self.coursename = ""
+
+    def export_course(self, course, output_path):
         print('\nExporting course to Oppia format...')
-        self.generate_base_course(course)
-        self.generate_files_folder()
+
+        self.coursename = 'backup-moodle2-course-2-Course-' + str(DT.today().year) \
+                          + str(DT.today().month) + str(DT.today().day) + '-' + str(DT.today().hour) + str(
+            DT.today().minute) + '-nu'
+
+        self.course_dir = os.path.join(os.path.join(output_path, 'temp'), self.coursename)
+
+        self.copy_base_course(output_path)
+
+        self.generate_files_dir(output_path)
         self.generate_sessions(course.sections)
         self.generate_sections(course)
         self.generate_files_file()
         self.generate_moodle_backup_info(course)
 
         filename = self.compress_course(course.title)
-        self.export_course(filename, output_path)
+        shutil.move(os.path.join(settings.PROJECT_ROOT, filename), os.path.join(output_path, filename))
 
-
-    def generate_base_course(self, course):
+    def copy_base_course(self, output_path):
         """ Create all the base files needed to restore the course. """
-        print('\nGenerating course base files...')
+        print('\nCopying course base files...')
 
-        if not os.path.exists('Course/course'):
-            os.makedirs('Course/course')
+        if not os.path.exists(self.course_dir):
+            os.makedirs(self.course_dir)
+        copy_tree(settings.TEMP_COURSE, self.course_dir)
 
-        self.generate_roles_files()
-        self.generate_groups_file()
-        self.generate_outcomes_file()
-        self.generate_questions_file()
-        self.generate_scales_file()
+    def generate_files_dir(self, output_path):
+        files_dir = os.path.join(self.course_dir, 'files')
+        if os.path.exists(files_dir):
+            try:
+                os.remove(os.path(files_dir))
+            except Exception as e:
+                print e
 
-    def generate_roles_files(self):
-        print('  > Creating Course/course/roles.xml... '),
-        f = open("Course/course/roles.xml", "wb+")
-        f.write('<?xml version="1.0" encoding="UTF-8"?>\n<roles><role_overrides>'
-                '</role_overrides><role_assignments></role_assignments></roles>')
-        f.close()
-        print 'Done.'
+        os.makedirs('Course/files')
 
-        print('  > Creating Course/roles.xml... '),
-        f = open("Course/roles.xml", "wb+")
-        f.write('<?xml version="1.0" encoding="UTF-8"?>\n<roles_definition></roles_definition>')
-        f.close()
-        print 'Done.'
+        images_dir = os.path.join(os.path.join(output_path, 'temp'), 'images')
+        i = 1
+        for image_file in listdir(images_dir):
+            new_filename = hashlib.sha1(image_file).hexdigest()
+            self.files_values.append({'fileid': str(i), 'filename': image_file, 'file_hash': new_filename, 'timecreated': int(time.time())})
 
-    def generate_groups_file(self):
-        print('  > Creating goups.xml... '),
-        f = open("Course/groups.xml", "wb+")
-        f.write('<?xml version="1.0" encoding="UTF-8"?>\n<groups></groups>')
-        f.close()
-        print 'Done.'
+            os.rename(os.path.join(images_dir, image_file), os.path.join(images_dir, new_filename))
+            filepath = os.path.join('Course/files', new_filename[:2])
+            if not os.path.exists(filepath):
+                os.makedirs(filepath)
+            shutil.move(os.path.join(images_dir, new_filename), os.path.join(settings.PROJECT_ROOT, filepath, new_filename))
+            i += 1
 
-    def generate_outcomes_file(self):
-        print('  > Creating outcomes.xml... '),
-        f = open("Course/outcomes.xml", "wb+")
-        f.write('<?xml version="1.0" encoding="UTF-8"?>\n<outcomes_definition></outcomes_definition>')
-        f.close()
-        print 'Done.'
-
-    def generate_questions_file(self):
-        print('  > Creating questions.xml... '),
-        f = open("Course/questions.xml", "wb+")
-        f.write('<?xml version="1.0" encoding="UTF-8"?>\n<question_categories></question_categories>')
-        f.close()
-        print 'Done.'
-
-    def generate_scales_file(self):
-        print('  > Creating scales.xml... '),
-        f = open("Course/scales.xml", "wb+")
-        f.write('<?xml version="1.0" encoding="UTF-8"?>\n<scales_definition></scales_definition>')
-        f.close()
-        print 'Done.'
+        shutil.rmtree("images", onerror=self.readonly_handler)
 
     def generate_sections(self, course):
         """ Generate all the files that include information about the sections"""
@@ -202,29 +188,6 @@ class CourseExporter:
         roles_file.write('<?xml version="1.0" encoding="UTF-8"?>\n<roles>\n<role_overrides></role_overrides>\n<role_assignments></role_assignments>\n</roles>')
         roles_file.close()
 
-    def generate_files_folder(self):
-        if os.path.exists('Course/files'):
-            try:
-                os.remove(os.path('Course/files'))
-            except Exception as e:
-                print e
-        else:
-            os.makedirs('Course/files')
-
-        images_folder = os.path.join(settings.PROJECT_ROOT, 'images')
-        i = 1
-        for image_file in listdir(images_folder):
-            new_filename = hashlib.sha1(image_file).hexdigest()
-            self.files_values.append({'fileid': str(i), 'filename': image_file, 'file_hash': new_filename, 'timecreated': int(time.time())})
-
-            os.rename(os.path.join(images_folder, image_file), os.path.join(images_folder, new_filename))
-            filepath = os.path.join('Course/files', new_filename[:2])
-            if not os.path.exists(filepath):
-                os.makedirs(filepath)
-            shutil.move(os.path.join(images_folder, new_filename), os.path.join(settings.PROJECT_ROOT, filepath, new_filename))
-            i += 1
-
-        shutil.rmtree("images", onerror=self.readonly_handler)
 
     def generate_files_file(self):
         """ Generate the file files.xml"""
@@ -236,17 +199,14 @@ class CourseExporter:
 
     def compress_course(self, course_title, type='mbz'):
         source_path = os.path.join(settings.PROJECT_ROOT, "Course")
-        filename = filename = 'backup-moodle2-course-2-Course-' + str(DT.today().year) \
-                       + str(DT.today().month) + str(DT.today().day) + '-' + str(DT.today().hour) + str(DT.today().minute) + '-nu'
+
         if type == 'mbz':
-            filename += '.mbz'
-            with tarfile.open(filename, "w:gz") as tar:
+            with tarfile.open(self.coursename + '.mbz', "w:gz") as tar:
                 for file in listdir(source_path):
                     tar.add(os.path.join("Course", file), arcname=file)
                 tar.close()
         elif type == 'zip':
-            filename += '.zip'
-            with zipfile(filename, 'w') as zip:
+            with zipfile(self.coursename + '.zip', 'w') as zip:
                 for file in listdir(source_path):
                     zip.write(os.path.join("Course", file))
                 zip.close()
@@ -254,13 +214,12 @@ class CourseExporter:
             print 'Error: Wrong backup extension.'
 
         shutil.rmtree("Course", onerror=self.readonly_handler)
-        return filename
 
     def readonly_handler(func, path, execinfo, extra):
-        os.chmod(path, 128)
+        os.chmod(path, stat.S_IWRITE)
         func(path)
 
-    def export_course(self, filename, output_path):
-        if not os.path.exists(output_path):
-            os.makedirs(output_path)
-        shutil.move(os.path.join(settings.PROJECT_ROOT, filename), os.path.join(output_path, filename))
+    #def export_course(self, filename, output_path):
+    #    if not os.path.exists(output_path):
+    #        os.makedirs(output_path)
+    #    shutil.move(os.path.join(settings.PROJECT_ROOT, filename), os.path.join(output_path, filename))

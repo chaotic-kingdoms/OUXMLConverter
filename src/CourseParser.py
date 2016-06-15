@@ -6,7 +6,6 @@ import sys
 import Course
 import re
 import os
-import CourseExporter
 from xml.etree import ElementTree
 from urllib2 import HTTPError, URLError
 import settings
@@ -27,7 +26,7 @@ class ParseXML:
     def retrieve_course(self):
         """ Obtains all the course contents and pre-process it"""
         print('Getting course from file ' + self.input_path)
-        self.get_images(self.input_path)
+        self.get_images(self.input_path, self.output_path)
         self.get_contents(self.input_path)
 
         cp = ContentPreprocessor.ContentPreprocessor(settings.XSL_FILE, self.course)
@@ -89,7 +88,7 @@ class ParseXML:
         self.sections.append(Course.Section(section_title, sessions))
         print 'Done.\n'
 
-    def get_images(self, input_path):
+    def get_images(self, input_path, output_path):
         """ Get the course images from a .txt that contains the URLs to the course sections.
             The images are get from the RSS files of the course."""
 
@@ -121,17 +120,21 @@ class ParseXML:
                     print('Reason: ', e.reason)
                 else:
                     print "Done."
-                    self.download_images(rss_file)
+                    self.download_images(rss_file, output_path)
                     response.close()
             i += 1
 
-    def download_images(self, content):
+    def download_images(self, content, output_path):
         element = ElementTree.fromstring(content)
+
+        images_dir = os.path.join(os.path.join(output_path, 'temp'), 'images')
+        if not os.path.exists(images_dir):
+            os.makedirs(images_dir)
 
         i = 1
         for session in element.iter('item'):
             try:
-                print '* Session ' + str(i) + ":",
+                print '* Session ' + str(i) + ":"
                 description = session.find('description')
                 #print description.text
                 images_list = re.findall('http[s]?://[^\s]*\.(?:jpg|JPG|png|PNG|jpeg|JPEG)', ElementTree.tostring(description, 'utf8', 'xml'))
@@ -140,30 +143,23 @@ class ParseXML:
                     i += 1
                     continue
                 else:
-                    print
-                    if not os.path.exists('images'):
-                        os.makedirs('images')
-
                     print '   > Getting images from RSS file content... '
 
-                j = 0
-                for image_url in images_list:
-                    progress = str(j * 100 / len(images_list)) + '%'
-                    print '\r   > Downloading images (' + progress + ')',
-                    sys.stdout.flush()
-                    filename = image_url.split("/")[-1].replace(".small", "")
-                    response = urllib2.urlopen(image_url)
+                    j = 0
+                    for image_url in images_list:
+                        progress = str(j * 100 / len(images_list)) + '%'
+                        print '\r   > Downloading images (' + progress + ')',
+                        sys.stdout.flush()
+                        filename = image_url.split("/")[-1].replace(".small", "")
+                        response = urllib2.urlopen(image_url)
 
-                    if not os.path.exists('images'):
-                        os.makedirs('images')
+                        f = open(os.path.join(images_dir, filename), "wb+")
+                        f.write(response.read())
+                        f.close()
 
-                    f = open("images/" + filename, "wb+")
-                    f.write(response.read())
-                    f.close()
-
-                    j += 1
-                print '\r   > Downloading images (100%). Done.'
-                i += 1
+                        j += 1
+                    print '\r   > Downloading images (100%). Done.'
+                    i += 1
             except AttributeError:
                 return
 

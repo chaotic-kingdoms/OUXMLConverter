@@ -8,8 +8,6 @@ import sys
 
 
 class ContentPreprocessor:
-    xsl_file = ""
-    course = ""
 
     def __init__(self, xsl_file, course):
         self.xsl_file = xsl_file

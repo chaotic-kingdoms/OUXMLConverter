@@ -10,7 +10,8 @@ def main(argv):
     else:
         parser = ParseXML(str(sys.argv[1]), str(sys.argv[2]))
         course = parser.retrieve_course()
-        export_course(course, str(sys.argv[2]))
+
+        CourseExporter.CourseExporter(course, str(sys.argv[2]))
 
 
 def export_course(course, output_path):
