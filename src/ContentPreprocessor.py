@@ -9,15 +9,16 @@ import sys
 
 class ContentPreprocessor:
 
-    def __init__(self, xsl_file, course):
+    def __init__(self, xsl_file, course, output_path):
         self.xsl_file = xsl_file
         self.course = course
+        self.output_path = output_path
 
     def preprocess_course(self):
         """ Perform the course preprocessing. This include converting the course contents to HTML and optimize the
             course images"""
         self.course_to_html()
-        self.optimize_images()
+        self.optimize_images(self.output_path)
 
     def course_to_html(self):
 
@@ -42,15 +43,15 @@ class ContentPreprocessor:
         newdom = transform(dom)
         return ET.tostring(newdom, pretty_print=True)
 
-    def optimize_images(self):
+    def optimize_images(self, output_path):
         print '\nBegining image optimization'
-        images_folder = os.path.join(settings.PROJECT_ROOT, 'images')
+        images_dir = os.path.join(os.path.join(output_path, 'temp'), 'images')
         size_saved = 0
         i = 1
-        for image_file in listdir(images_folder):
-            image_path = os.path.join(images_folder, image_file)
+        for image_file in listdir(images_dir):
+            image_path = os.path.join(images_dir, image_file)
             initial_size = os.stat(image_path).st_size
-            progress = str(i * 100 / len(listdir(images_folder))) + '%'
+            progress = str(i * 100 / len(listdir(images_dir))) + '%'
             print '\r  > Optimizing images (' + progress + ')',
             sys.stdout.flush()
             image = Image.open(image_path)

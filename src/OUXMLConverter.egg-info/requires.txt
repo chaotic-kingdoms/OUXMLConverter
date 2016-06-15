@@ -2,4 +2,4 @@ lxml
 pystache
 cssselect
 requests
-Pil
+pillow

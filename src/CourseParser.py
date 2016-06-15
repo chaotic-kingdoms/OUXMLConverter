@@ -26,10 +26,10 @@ class ParseXML:
     def retrieve_course(self):
         """ Obtains all the course contents and pre-process it"""
         print('Getting course from file ' + self.input_path)
-        self.get_images(self.input_path, self.output_path)
+        #self.get_images(self.input_path, self.output_path)
         self.get_contents(self.input_path)
 
-        cp = ContentPreprocessor.ContentPreprocessor(settings.XSL_FILE, self.course)
+        cp = ContentPreprocessor.ContentPreprocessor(settings.XSL_FILE, self.course, self.output_path)
         cp.preprocess_course()
 
         return self.course
@@ -68,7 +68,7 @@ class ParseXML:
         """ Parse the xml file and build the course"""
         element = ElementTree.fromstring(content)
 
-        self.course_title = ElementTree.tostring(element.find('CourseTitle'), 'utf8', 'xml')
+        self.course_title = ElementTree.tostring(element.find('CourseTitle'), 'utf8', 'text')
         section_title = ElementTree.tostring(element.find('ItemTitle'), 'utf8', 'xml')
 
         sessions = []
