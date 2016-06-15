@@ -7,37 +7,44 @@ from os import listdir
 import sys
 
 
-class ContentPreprocessor(object):
+class ContentPreprocessor:
+    xsl_file = ""
+    course = ""
 
-    @staticmethod
-    def contenttohtml(content, xslfile):
-        """Apply XSLT to the content of the course and returns the converted HTML text"""
-        dom = ET.XML(content, ET.XMLParser(target=ET.TreeBuilder()))
-        xslt = ET.parse(xslfile)
-        transform = ET.XSLT(xslt)
-        newdom = transform(dom)
-        return ET.tostring(newdom, pretty_print=True)
+    def __init__(self, xsl_file, course):
+        self.xsl_file = xsl_file
+        self.course = course
 
-    @staticmethod
-    def course_to_html(course, xslfile):
+    def preprocess_course(self):
+        """ Perform the course preprocessing. This include converting the course contents to HTML and optimize the
+            course images"""
+        self.course_to_html()
+        self.optimize_images()
 
+    def course_to_html(self):
 
-        course.title = ContentPreprocessor.contenttohtml(course.title, xslfile)
+        self.course.title = self.content_to_html(self.course.title)
         i = 1
-        for section in course.sections:
-            section.title = ContentPreprocessor.contenttohtml(section.title, xslfile)
+        for section in self.course.sections:
+            section.title = self.content_to_html(section.title)
             for session in section.sessions:
                 progress = str(i * 100 / len(section.sessions)) + '%'
                 print '\r> Applying XSLT to the course (' + progress + ')',
                 sys.stdout.flush()
-                session.title = ContentPreprocessor.contenttohtml(session.title, xslfile)
-                session.content = ContentPreprocessor.contenttohtml(session.content, xslfile)
+                session.title = self.content_to_html(session.title)
+                session.content = self.content_to_html(session.content)
                 i += 1
         print '\r> Applying XSLT to the course (100%). Done.'
-        return course
 
-    @staticmethod
-    def optimize_images():
+    def content_to_html(self, content):
+        """Apply XSLT to the content of the course and returns the converted HTML text"""
+        dom = ET.XML(content, ET.XMLParser(target=ET.TreeBuilder()))
+        xslt = ET.parse(self.xsl_file)
+        transform = ET.XSLT(xslt)
+        newdom = transform(dom)
+        return ET.tostring(newdom, pretty_print=True)
+
+    def optimize_images(self):
         print '\nBegining image optimization'
         images_folder = os.path.join(settings.PROJECT_ROOT, 'images')
         size_saved = 0

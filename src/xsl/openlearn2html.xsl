@@ -39,7 +39,6 @@
     <xsl:template match="Image">
         <img>
             <xsl:attribute name="src"><xsl:value-of select="@src"/></xsl:attribute>
-            <xsl:attribute name="width">200</xsl:attribute>
         </img>
     </xsl:template>
 
@@ -76,11 +75,11 @@
     </xsl:template>
 
     <xsl:template match="b">
-       <b><xsl:value-of select="."/></b>
+       <b><xsl:apply-templates/></b>
     </xsl:template>
 
     <xsl:template match="i">
-        <i><xsl:value-of select="."/></i>
+        <i><xsl:apply-templates/></i>
     </xsl:template>
 
 </xsl:stylesheet>

@@ -12,31 +12,34 @@ from urllib2 import HTTPError, URLError
 import settings
 
 from utils.URLUtils import URLUtils
-from ContentPreprocessor import ContentPreprocessor as CP
+import ContentPreprocessor
 
 
 class ParseXML:
 
-    course_title = ""
-    sections = []
-
     def __init__(self, input_path, output_path):
-        print('Getting course from file ' + input_path)
-        print('\nGetting images from RSS files')
-        self.getimages(input_path)
+        self.input_path = input_path
+        self.output_path = output_path
+        self.course = None
+        self.course_title = ""
+        self.sections = []
+
+    def retrieve_course(self):
+        """ Obtains all the course contents and pre-process it"""
+        print('Getting course from file ' + self.input_path)
+        self.get_images(self.input_path)
+        self.get_contents(self.input_path)
+
+        cp = ContentPreprocessor.ContentPreprocessor(settings.XSL_FILE, self.course)
+        cp.preprocess_course()
+
+        return self.course
+
+    def get_contents(self, input_path):
+        """ Get the course contents from a .txt that contains the URLs to the course sections.
+            The contents are get from the XML files of the course."""
+
         print('\nGetting contents from XML files')
-        course = self.getcourse(input_path)
-        #course.coursetofile("CourseOU.txt")
-        CP.course_to_html(course, settings.XSL_FILE)
-        CP.optimize_images()
-        CourseExporter.CourseExporter(course, output_path)
-        #course.coursetofile("CourseOppia.txt")
-
-        print ('\nCourse created successfully!')
-
-
-    def getcourse(self, input_path):
-        """ Get the course from a .txt that contains the URLs to the xml files of the course sections"""
         file = open(input_path, "r")
 
         i = 1
@@ -55,14 +58,14 @@ class ParseXML:
                     print('Reason: ', e.reason)
                 else:
                     print('Section ' + str(i) + ':')
-                    self.parsexml(section_xml)
+                    self.parse_xml(section_xml)
                     response.close()
             i += 1
 
         file.close()
-        return Course.Course(self.course_title, "", self.sections)
+        self.course = Course.Course(self.course_title, "", self.sections)
 
-    def parsexml(self, content):
+    def parse_xml(self, content):
         """ Parse the xml file and build the course"""
         element = ElementTree.fromstring(content)
 
@@ -86,7 +89,11 @@ class ParseXML:
         self.sections.append(Course.Section(section_title, sessions))
         print 'Done.\n'
 
-    def getimages(self, input_path):
+    def get_images(self, input_path):
+        """ Get the course images from a .txt that contains the URLs to the course sections.
+            The images are get from the RSS files of the course."""
+
+        print('\nGetting images from RSS files')
         file = open(input_path, "r")
 
         i = 1
@@ -114,11 +121,11 @@ class ParseXML:
                     print('Reason: ', e.reason)
                 else:
                     print "Done."
-                    contextid = self.downloadimages(rss_file)
+                    self.download_images(rss_file)
                     response.close()
             i += 1
 
-    def downloadimages(self, content):
+    def download_images(self, content):
         element = ElementTree.fromstring(content)
 
         i = 1
@@ -160,8 +167,3 @@ class ParseXML:
             except AttributeError:
                 return
 
-if len(sys.argv) != 3:
-    print 'Wrong number of arguments.'
-    print 'Usage: TO-DO'
-else:
-    ParseXML(str(sys.argv[1]), str(sys.argv[2]))
