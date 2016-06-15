@@ -3,13 +3,11 @@ import ContentPreprocessor as CP
 
 class Course:
 
-    title = ""
-    meta = ""
     sections = []
 
-    def __init__(self, title, meta, sections):
-        self.title = title
-        self.meta = meta
+    def __init__(self, title_full, title_short, sections):
+        self.title_full = title_full
+        self.title_short = title_short
         self.sections = sections
         print ('Course object created successfully!\n')
 
@@ -17,7 +15,7 @@ class Course:
         """Write the complete course to a file"""
         print('\nWriting course to the file ' + filename)
         file = open(filename, "w+")
-        file.write(self.title + "\n")
+        file.write(self.title_full + "\n")
         for section in self.sections:
             file.write(section.title + "\n")
             for session in section.sessions:

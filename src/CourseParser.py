@@ -20,13 +20,14 @@ class ParseXML:
         self.input_path = input_path
         self.output_path = output_path
         self.course = None
-        self.course_title = ""
+        self.course_title_full = ""
+        self.course_title_short = ""
         self.sections = []
 
     def retrieve_course(self):
         """ Obtains all the course contents and pre-process it"""
         print('Getting course from file ' + self.input_path)
-        #self.get_images(self.input_path, self.output_path)
+        self.get_images(self.input_path, self.output_path)
         self.get_contents(self.input_path)
 
         cp = ContentPreprocessor.ContentPreprocessor(settings.XSL_FILE, self.course, self.output_path)
@@ -62,13 +63,17 @@ class ParseXML:
             i += 1
 
         file.close()
-        self.course = Course.Course(self.course_title, "", self.sections)
+        self.course = Course.Course(self.course_title_full, self.course_title_short, self.sections)
 
     def parse_xml(self, content):
         """ Parse the xml file and build the course"""
         element = ElementTree.fromstring(content)
 
-        self.course_title = ElementTree.tostring(element.find('CourseTitle'), 'utf8', 'text')
+        if not self.course_title_full:
+            self.course_title_full = ElementTree.tostring(element.find('CourseTitle'), 'utf8', 'text')
+        if not self.course_title_short:
+            self.course_title_short = ElementTree.tostring(element.find('CourseCode'), 'utf8', 'text')
+
         section_title = ElementTree.tostring(element.find('ItemTitle'), 'utf8', 'xml')
 
         sessions = []
@@ -127,7 +132,7 @@ class ParseXML:
     def download_images(self, content, output_path):
         element = ElementTree.fromstring(content)
 
-        images_dir = os.path.join(os.path.join(output_path, 'temp'), 'images')
+        images_dir = os.path.join(output_path, 'temp', 'images')
         if not os.path.exists(images_dir):
             os.makedirs(images_dir)
 

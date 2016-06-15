@@ -22,7 +22,6 @@ class ContentPreprocessor:
 
     def course_to_html(self):
 
-        self.course.title = self.content_to_html(self.course.title)
         i = 1
         for section in self.course.sections:
             section.title = self.content_to_html(section.title)
@@ -45,7 +44,7 @@ class ContentPreprocessor:
 
     def optimize_images(self, output_path):
         print '\nBegining image optimization'
-        images_dir = os.path.join(os.path.join(output_path, 'temp'), 'images')
+        images_dir = os.path.join(output_path, 'temp', 'images')
         size_saved = 0
         i = 1
         for image_file in listdir(images_dir):

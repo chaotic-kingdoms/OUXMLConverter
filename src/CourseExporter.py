@@ -1,6 +1,5 @@
 import os
-from os import listdir
-from os import walk
+from os import listdir 
 import re
 import pystache
 import settings
@@ -11,9 +10,10 @@ from datetime import datetime as DT
 import sys
 import tarfile
 import zipfile
-import stat
 from distutils.dir_util import copy_tree
+from distutils.dir_util import remove_tree
 from utils.CourseUtils import CourseUtils
+from utils.CourseUtils import readonly_handler
 
 
 class CourseExporter:
@@ -43,9 +43,10 @@ class CourseExporter:
         self.generate_files_file()
         self.generate_moodle_backup_info(course)
 
-        CourseUtils.compress_course(self.course_dir)
+        backup_name = CourseUtils.compress_course(self.course_dir)
         #self.compress_course(course.title)
-        #shutil.move(os.path.join(settings.PROJECT_ROOT, self.course_name), os.path.join(output_path, self.course_name))
+        shutil.move(os.path.join(self.course_dir, backup_name), output_path)
+        remove_tree(os.path.join(output_path, 'temp'))
 
     def copy_base_course(self, output_path):
         """ Create all the base files needed to restore the course. """
@@ -77,7 +78,7 @@ class CourseExporter:
             shutil.move(os.path.join(images_dir, new_filename), os.path.join(settings.PROJECT_ROOT, file_path, new_filename))
             i += 1
 
-        shutil.rmtree(images_dir, onerror=self.readonly_handler)
+        shutil.rmtree(images_dir, onerror=readonly_handler)
 
     def generate_sections(self, course):
         """ Generate all the files that include information about the sections"""
@@ -108,9 +109,11 @@ class CourseExporter:
         print '\r  > Generating sections (100%). Done.'
 
         # Add sections count to file course.xml within "course" directory
-        course_info_file = open(os.path.join(os.path.join(self.course_dir, "course"), "course.xml"), "wb+")
+        course_info_file = open(os.path.join(self.course_dir, "course", "course.xml"), "wb+")
         course_info_file.write(renderer.render_path(os.path.join(settings.TEMPLATES_ROOT, 'course_info.mustache'),
-                                                    {'sections_count': len(course.sections), 'course_title': course.title}))
+                                                    {'sections_count': len(course.sections),
+                                                     'course_title_full': course.title_full,
+                                                     'course_title_short': course.title_short}))
 
     def generate_sessions(self, sections):
         """ Generate all the files that include information about the sessions"""
@@ -180,11 +183,12 @@ class CourseExporter:
 
         moodle_backup_file = open(os.path.join(self.course_dir, "moodle_backup.xml"), "wb+")
         moodle_backup_file.write(renderer.render_path(os.path.join(settings.TEMPLATES_ROOT, 'moodle_backup.mustache'),
-                                                      {'sessions': self.session_values, 'sections': self.section_values, 'course_title': course.title}))
+                                                      {'sessions': self.session_values, 'sections': self.section_values,
+                                                       'course_title_full': course.title_full, 'course_title_short':course.title_short}))
         print 'Done.'
 
     def generate_session_base_files(self, sessionid):
-        page_dir = os.path.join(os.path.join(self.course_dir, "activities"), "page_" + str(sessionid))
+        page_dir = os.path.join(self.course_dir, "activities", "page_" + str(sessionid))
         copy_tree(settings.BASE_SESSION, page_dir)
 
     def generate_files_file(self):
@@ -211,11 +215,8 @@ class CourseExporter:
         else:
             print 'Error: Wrong backup extension.'
 
-        shutil.rmtree("Course", onerror=self.readonly_handler)
+        shutil.rmtree("Course", onerror=readonly_handler)
 
-    def readonly_handler(func, path, execinfo, extra):
-        os.chmod(path, stat.S_IWRITE)
-        func(path)
 
     #def export_course(self, filename, output_path):
     #    if not os.path.exists(output_path):
