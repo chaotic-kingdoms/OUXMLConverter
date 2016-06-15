@@ -7,6 +7,7 @@ import settings
 import hashlib
 import shutil
 import time
+from datetime import datetime as DT
 import sys
 import tarfile
 import zipfile
@@ -27,11 +28,11 @@ class CourseExporter:
         self.generate_base_course(course)
         self.generate_files_folder()
         self.generate_sessions(course.sections)
-        self.generate_sections(course.sections)
+        self.generate_sections(course)
         self.generate_files_file()
-        self.generate_moodle_backup_info()
+        self.generate_moodle_backup_info(course)
 
-        filename = self.compress_course()
+        filename = self.compress_course(course.title)
         self.export_course(filename, output_path)
 
 
@@ -90,7 +91,7 @@ class CourseExporter:
         f.close()
         print 'Done.'
 
-    def generate_sections(self, sections):
+    def generate_sections(self, course):
         """ Generate all the files that include information about the sections"""
         print('\nGenerating sections...')
 
@@ -98,8 +99,8 @@ class CourseExporter:
 
         # Create section.xml files within the "sections" directory
         i = 1
-        for section in sections:
-            progress = str(i * 100 / len(sections)) + '%'
+        for section in course.sections:
+            progress = str(i * 100 / len(course.sections)) + '%'
             print '\r  > Generating sections (' + progress + ')',
             sys.stdout.flush()
             #Information of sections for "moodle_backup.xml" file
@@ -118,7 +119,7 @@ class CourseExporter:
         # Add sections count to file course.xml within "course" directory
         course_info_file = open("Course/course/course.xml", "wb+")
         course_info_file.write(renderer.render_path(os.path.join(settings.TEMPLATES_ROOT, 'course_info.mustache'),
-                                                    {'sections_count': len(sections)}))
+                                                    {'sections_count': len(course.sections), 'course_title': course.title}))
 
     def generate_sessions(self, sections):
         print('\nGenerating sessions...')
@@ -173,7 +174,7 @@ class CourseExporter:
             print '\r  > Generating sessions (100%). Done.'
             i += 1
 
-    def generate_moodle_backup_info(self):
+    def generate_moodle_backup_info(self, course):
         """ Generate the file moodle_backup.xml"""
         print('\nCreating moodle_backup.xml... '),
         sys.stdout.flush()
@@ -181,7 +182,7 @@ class CourseExporter:
 
         moodle_backup_file = open("Course/moodle_backup.xml", "wb+")
         moodle_backup_file.write(renderer.render_path(os.path.join(settings.TEMPLATES_ROOT, 'moodle_backup.mustache'),
-                                                      {'sessions': self.session_values, 'sections': self.section_values}))
+                                                      {'sessions': self.session_values, 'sections': self.section_values, 'course_title': course.title}))
         print 'Done.'
 
     def generate_session_base_files(self, sessionid):
@@ -233,25 +234,29 @@ class CourseExporter:
         files_file.write(renderer.render_path(os.path.join(settings.TEMPLATES_ROOT, 'files.mustache'),
                                               {'files': self.files_values}))
 
-    def compress_course(self, type='mbz'):
+    def compress_course(self, course_title, type='mbz'):
         source_path = os.path.join(settings.PROJECT_ROOT, "Course")
+        filename = filename = 'backup-moodle2-course-2-Course-' + str(DT.today().year) \
+                       + str(DT.today().month) + str(DT.today().day) + '-' + str(DT.today().hour) + str(DT.today().minute) + '-nu'
         if type == 'mbz':
-            filename = "course.mbz"
+            filename += '.mbz'
             with tarfile.open(filename, "w:gz") as tar:
                 for file in listdir(source_path):
                     tar.add(os.path.join("Course", file), arcname=file)
                 tar.close()
         elif type == 'zip':
-            filename = "course.zip"
+            filename += '.zip'
             with zipfile(filename, 'w') as zip:
                 for file in listdir(source_path):
                     zip.write(os.path.join("Course", file))
                 zip.close()
+        else:
+            print 'Error: Wrong backup extension.'
 
         shutil.rmtree("Course", onerror=self.readonly_handler)
         return filename
 
-    def readonly_handler(func, path):
+    def readonly_handler(func, path, execinfo, extra):
         os.chmod(path, 128)
         func(path)
 
