@@ -37,6 +37,7 @@ class ContentPreprocessor:
 
     def content_to_html(self, content):
         """Apply XSLT to the content of the course and returns the converted HTML text"""
+        print content
         dom = ET.XML(content, ET.XMLParser(target=ET.TreeBuilder()))
         xslt = ET.parse(self.xsl_file)
         transform = ET.XSLT(xslt)

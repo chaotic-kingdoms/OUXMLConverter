@@ -79,16 +79,27 @@ class ParseXML:
         sessions = []
         i = 1
         session_count = len(element.findall('.//Session'))
-        for session in element.iter('Session'):
-            if session_count != 0:
+        references_count = len(element.findall('.//Reference'))
+        if references_count != 0:
+            for reference in element.iter('Session'):
+                progress = str(i * 100 / references_count) + '%'
+                print '\r > Parsing References (' + str(i) + '/' + str(references_count) + ' - ' + progress + ').',
+                sys.stdout.flush()
+                references_title = '<Title>References</Title>'
+                content = ElementTree.tostring(reference, 'utf8', 'html')
+                sessions.append(Course.Session(references_title, content))
+                i += 1
+        elif session_count != 0:
+            for session in element.iter('Session'):
                 progress = str(i * 100 / session_count) + '%'
                 print '\r > Parsing Sessions (' + str(i) + '/' + str(session_count) + ' - ' + progress + ').',
                 sys.stdout.flush()
-            session_title = ElementTree.tostring(session.find('Title'), 'utf8', 'xml')
-            session.remove(session.find('Title'))
-            content = ElementTree.tostring(session, 'utf8', 'xml')
-            sessions.append(Course.Session(session_title, content))
-            i += 1
+                session_title = ElementTree.tostring(session.find('Title'), 'utf8', 'xml')
+                print session_title
+                session.remove(session.find('Title'))
+                content = ElementTree.tostring(session, 'utf8', 'xml')
+                sessions.append(Course.Session(session_title, content))
+                i += 1
 
         self.sections.append(Course.Section(section_title, sessions))
         print 'Done.\n'

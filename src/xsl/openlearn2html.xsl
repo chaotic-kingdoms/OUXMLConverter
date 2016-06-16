@@ -8,7 +8,7 @@
         </html>
     </xsl:template>
 
-    <xsl:template match="Paragraph">
+    <xsl:template match="Paragraph|Reference">
         <p><xsl:apply-templates/></p>
     </xsl:template>
 
@@ -64,9 +64,11 @@
 
     <xsl:template match="ITQ">
         <div class="box question">
-        <p><xsl:value-of select="Question"/></p>
-        <div name="reveal" id="2" class="reveal">Show answer</div>
-        <div style="display:none;" id="answer2"><xsl:value-of select="Answer"/></div>
+            <p><xsl:value-of select="Question"/></p>
+            <div name="reveal" id="1" class="reveal">Show answer</div>
+            <div id="answer1">
+                <p><xsl:value-of select="Answer"/></p>
+            </div>
         </div>
     </xsl:template>
 
