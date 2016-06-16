@@ -16,6 +16,8 @@ class ContentPreprocessor:
     def preprocess_course(self):
         """ Perform the course pre-processing. This include converting the course contents to HTML and optimize the
             course images"""
+
+        print '\n========== COURSE PREPROCESSING =================\n'
         self.course_to_html()
         self.optimize_images()
 
@@ -25,7 +27,7 @@ class ContentPreprocessor:
         for section in self.course.sections:
             section.title = self.content_to_html(section.title)
             progress = str(i * 100 / len(self.course.sections)) + '%'
-            print '\r> Applying XSLT to the course (' + progress + ')',
+            print '\r  > Applying XSLT to the course (' + progress + ')',
             sys.stdout.flush()
 
             for session in section.sessions:
@@ -33,11 +35,11 @@ class ContentPreprocessor:
                 session.content = self.content_to_html(session.content)
 
             i += 1
-        print '\r> Applying XSLT to the course (100%). Done.'
+        print '\r  > Applying XSLT to the course (100%). Done.'
 
     def content_to_html(self, content):
         """Apply XSLT to the content of the course and returns the converted HTML text"""
-        print content
+
         dom = ET.XML(content, ET.XMLParser(target=ET.TreeBuilder()))
         xslt = ET.parse(self.xsl_file)
         transform = ET.XSLT(xslt)
@@ -45,7 +47,6 @@ class ContentPreprocessor:
         return ET.tostring(newdom, pretty_print=True)
 
     def optimize_images(self):
-        print '\nBegining image optimization'
         images_dir = os.path.join(settings.OUTPUT_PATH, 'temp', 'images')
         size_saved = 0
         i = 1

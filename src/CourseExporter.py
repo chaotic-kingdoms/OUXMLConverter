@@ -20,7 +20,8 @@ class CourseExporter:
         self.files_values = []
 
     def generate_backup(self):
-        print('\nCreating moodle backup...')
+        print '\n========== COURSE EXPORT =================\n'
+        print 'Creating moodle backup:'
         self.copy_base_course()
         self.generate_files_folder()
         self.generate_sessions(self.course.sections)
