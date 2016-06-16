@@ -30,7 +30,7 @@ class ParseXML:
         self.get_images(self.input_path, self.output_path)
         self.get_contents(self.input_path)
 
-        cp = ContentPreprocessor.ContentPreprocessor(settings.XSL_FILE, self.course, self.output_path)
+        cp = ContentPreprocessor.ContentPreprocessor(settings.XSL_FILE, self.course)
         cp.preprocess_course()
 
         return self.course

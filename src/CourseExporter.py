@@ -4,20 +4,14 @@ import re
 import pystache
 import settings
 import hashlib
-import shutil
 import time
-from datetime import datetime as DT
 import sys
-import tarfile
-import zipfile
 from distutils.dir_util import copy_tree
+from distutils.file_util import copy_file
 from distutils.dir_util import remove_tree
-from utils.CourseUtils import CourseUtils
-from utils.CourseUtils import readonly_handler
 
 
 class CourseExporter:
-
 
     def __init__(self, course):
         self.course = course
@@ -36,12 +30,15 @@ class CourseExporter:
 
     def copy_base_course(self):
         """ Create all the base files needed to restore the course. """
+        print '  > Creating course base files... ',
         if not os.path.exists(settings.COURSE_DIR):
             os.makedirs(settings.COURSE_DIR)
         copy_tree(settings.BASE_COURSE, settings.COURSE_DIR)
+        print 'Done.'
 
     def generate_files_folder(self):
         """ Create 'files' directory where the course images are located"""
+        print '  > Creating files directory...',
         files_dir = os.path.join(settings.COURSE_DIR, 'files')
         if os.path.exists(files_dir):
             try:
@@ -54,6 +51,8 @@ class CourseExporter:
         images_dir = os.path.join(settings.OUTPUT_PATH, 'temp', 'images')
         i = 1
         for image_file in listdir(images_dir):
+            progress = str(i * 100 / len(listdir(images_dir))) + '%'
+            print '\r  > Creating files directory... (' + progress + ')',
             new_filename = hashlib.sha1(image_file).hexdigest()
             self.files_values.append({'fileid': str(i), 'filename': image_file, 'file_hash': new_filename, 'timecreated': int(time.time())})
 
@@ -61,14 +60,13 @@ class CourseExporter:
             file_path = os.path.join(files_dir, new_filename[:2])
             if not os.path.exists(file_path):
                 os.makedirs(file_path)
-            shutil.move(os.path.join(images_dir, new_filename), os.path.join(settings.PROJECT_ROOT, file_path, new_filename))
+            copy_file(os.path.join(images_dir, new_filename), os.path.join(settings.PROJECT_ROOT, file_path, new_filename))
             i += 1
-
-        shutil.rmtree(images_dir, onerror=readonly_handler)
+        print '\r  > Creating files directory. (' + progress + ') Done.'
+        remove_tree(images_dir)
 
     def generate_sections(self, course):
         """ Generate all the files that include information about the sections"""
-        print('\nGenerating sections...')
 
         sections_dir = os.path.join(settings.COURSE_DIR, "sections")
 
@@ -103,7 +101,6 @@ class CourseExporter:
 
     def generate_sessions(self, sections):
         """ Generate all the files that include information about the sessions"""
-        print('\nGenerating sessions...')
 
         activities_dir = os.path.join(settings.COURSE_DIR, "activities")
         if not os.path.exists(activities_dir):
@@ -113,11 +110,10 @@ class CourseExporter:
         i = 1
         j = 1
         for section in sections:
-            print("Section " + str(i) + ":")
+            progress = str(i * 100 / len(sections)) + '%'
+            print '\r  > Generating sessions (' + progress + ')',
+            sys.stdout.flush()
             for session in section.sessions:
-                progress = str(j * 100 / len(section.sessions)) + '%'
-                print '\r  > Generating sessions (' + progress + ')',
-                sys.stdout.flush()
                 self.session_values.append({'sessionid': str(j), 'sectionid': str(i), 'title': session.title.rstrip(),
                                             'session_directory': 'activities/page_' + str(j)})
                 page_dir = os.path.join(activities_dir, 'page_' + str(j))
@@ -158,12 +154,12 @@ class CourseExporter:
                                                         {'files': files, 'fileid': str(j)}))
                 inforef_file.close()
                 j += 1
-            print '\r  > Generating sessions (100%). Done.'
             i += 1
+        print '\r  > Generating sessions (100%). Done.'
 
     def generate_moodle_backup_info(self, course):
         """ Generate the file 'moodle_backup.xml'"""
-        print('\nCreating moodle_backup.xml... '),
+        print('  > Creating moodle_backup.xml... '),
         sys.stdout.flush()
         renderer = pystache.Renderer()
 
@@ -179,8 +175,10 @@ class CourseExporter:
 
     def generate_files_file(self):
         """ Generate the file files.xml"""
+        print '  > Creating files.xml... ',
         renderer = pystache.Renderer()
 
         files_file = open(os.path.join(settings.COURSE_DIR, "files.xml"), "wb+")
         files_file.write(renderer.render_path(os.path.join(settings.TEMPLATES_ROOT, 'files.mustache'),
                                               {'files': self.files_values}))
+        print 'Done.'

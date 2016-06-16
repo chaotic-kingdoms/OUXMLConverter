@@ -4,8 +4,8 @@ from CourseExporter import CourseExporter
 from utils.CourseUtils import CourseUtils
 import settings
 import os
+from distutils.file_util import copy_file
 from distutils.dir_util import remove_tree
-import shutil
 
 
 def main(argv):
@@ -25,7 +25,7 @@ def main(argv):
         exporter.generate_backup()
 
         backup_name = CourseUtils.compress_course(settings.COURSE_DIR)
-        shutil.move(os.path.join(settings.COURSE_DIR, backup_name), output_path)
+        copy_file(os.path.join(settings.COURSE_DIR, backup_name), output_path)
         remove_tree(os.path.join(output_path, 'temp'))
 
 

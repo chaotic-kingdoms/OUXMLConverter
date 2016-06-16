@@ -2,10 +2,8 @@ import os
 from os import listdir
 import tarfile
 import zipfile
-import shutil
 import stat
 from datetime import datetime as DT
-import settings
 
 
 class CourseUtils(object):
@@ -14,14 +12,11 @@ class CourseUtils(object):
 
     @staticmethod
     def compress_course(src, type='mbz'):
-        print src
         backup_name = src.split('/')[-1]
 
         if type == 'mbz':
             backup_name += '.mbz'
             with tarfile.open(backup_name, "w:gz") as tar:
-                print src
-                print backup_name
                 for file in listdir(src):
                     tar.add(os.path.join(src, file), arcname=file)
                 tar.close()

@@ -1,5 +1,4 @@
 
-import ContentPreprocessor as CP
 
 class Course:
 

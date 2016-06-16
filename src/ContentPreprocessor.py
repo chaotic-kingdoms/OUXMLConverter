@@ -2,23 +2,22 @@
 import lxml.etree as ET
 from PIL import Image
 import os
-import settings
 from os import listdir
 import sys
+import settings
 
 
 class ContentPreprocessor:
 
-    def __init__(self, xsl_file, course, output_path):
+    def __init__(self, xsl_file, course):
         self.xsl_file = xsl_file
         self.course = course
-        self.output_path = output_path
 
     def preprocess_course(self):
         """ Perform the course preprocessing. This include converting the course contents to HTML and optimize the
             course images"""
         self.course_to_html()
-        self.optimize_images(self.output_path)
+        self.optimize_images()
 
     def course_to_html(self):
 
@@ -42,9 +41,9 @@ class ContentPreprocessor:
         newdom = transform(dom)
         return ET.tostring(newdom, pretty_print=True)
 
-    def optimize_images(self, output_path):
+    def optimize_images(self):
         print '\nBegining image optimization'
-        images_dir = os.path.join(output_path, 'temp', 'images')
+        images_dir = os.path.join(settings.OUTPUT_PATH, 'temp', 'images')
         size_saved = 0
         i = 1
         for image_file in listdir(images_dir):
