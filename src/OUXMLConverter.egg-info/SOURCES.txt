@@ -1,6 +1,0 @@
-setup.py
-OUXMLConverter.egg-info/PKG-INFO
-OUXMLConverter.egg-info/SOURCES.txt
-OUXMLConverter.egg-info/dependency_links.txt
-OUXMLConverter.egg-info/requires.txt
-OUXMLConverter.egg-info/top_level.txt

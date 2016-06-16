@@ -1,14 +1,16 @@
-import os
-from os import listdir
-import re
-import pystache
-import settings
 import hashlib
-import time
 import sys
+import time
 from distutils.dir_util import copy_tree
-from distutils.file_util import copy_file
 from distutils.dir_util import remove_tree
+from distutils.file_util import copy_file
+
+import os
+import pystache
+import re
+from os import listdir
+
+import settings
 
 
 class CourseExporter:

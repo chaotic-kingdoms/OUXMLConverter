@@ -1,12 +1,13 @@
-import shutil
 import sys
-from CourseParser import ParseXML
-from CourseExporter import CourseExporter
-from utils.CourseUtils import CourseUtils
-import settings
-import os
-from distutils.file_util import copy_file
 from distutils.dir_util import remove_tree
+from distutils.file_util import copy_file
+
+import os
+
+import settings
+from CourseExporter import CourseExporter
+from CourseParser import CourseParser
+from utils.CourseUtils import CourseUtils
 
 
 def main(argv):
@@ -18,7 +19,7 @@ def main(argv):
         output_path = sys.argv[2]
         settings.OUTPUT_PATH = output_path
 
-        parser = ParseXML(input_path, output_path)
+        parser = CourseParser(input_path, output_path)
         course = parser.retrieve_course()
 
         course_name = CourseUtils.get_course_name(course.title_full)

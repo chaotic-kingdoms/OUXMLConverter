@@ -1,20 +1,18 @@
-
-import urllib2
-
 import sys
-
-from Course import Course, Section, Session
-import re
-import os
-from xml.etree import ElementTree
+import urllib2
 from urllib2 import HTTPError, URLError
-import settings
+from xml.etree import ElementTree
 
-from utils.URLUtils import URLUtils
+import os
+import re
+
 import ContentPreprocessor
+import settings
+from model import Course, Section, Session
+from utils.URLUtils import URLUtils
 
 
-class ParseXML:
+class CourseParser:
 
     def __init__(self, input_path, output_path):
         self.input_path = input_path
@@ -161,7 +159,7 @@ class ParseXML:
                     j = 0
                     for image_url in images_list:
                         progress = str(j * 100 / len(images_list)) + '%'
-                        print '\r     > Downloading images (' + progress + ')',
+                        print '\r      > Downloading images (' + progress + ')',
                         sys.stdout.flush()
                         filename = image_url.split("/")[-1].replace(".small", "")
                         response = urllib2.urlopen(image_url)

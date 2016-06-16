@@ -1,9 +1,10 @@
+import sys
 
 import lxml.etree as ET
-from PIL import Image
 import os
+from PIL import Image
 from os import listdir
-import sys
+
 import settings
 
 

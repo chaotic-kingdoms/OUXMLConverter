@@ -1,5 +1,0 @@
-lxml
-pystache
-cssselect
-requests
-pillow
