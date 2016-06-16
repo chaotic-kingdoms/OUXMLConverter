@@ -19,11 +19,10 @@ class CourseUtils(object):
         if type == 'mbz':
             backup_path += '.mbz'
             with tarfile.open(backup_path, "w:gz") as tar:
-                print tar
                 for file in listdir(src):
-                    print file
                     tar.add(os.path.join(src, file), arcname=file)
                 tar.close()
+
         elif type == 'zip':
             backup_name += '.zip'
             with zipfile(backup_name, 'w') as zip:

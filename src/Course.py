@@ -4,10 +4,10 @@ class Course:
 
     sections = []
 
-    def __init__(self, title_full, title_short, sections):
-        self.title_full = title_full
-        self.title_short = title_short
-        self.sections = sections
+    def __init__(self, title_full="", title_short="", sections=[]):
+        self.title_full = title_full or ""
+        self.title_short = title_short or ""
+        self.sections = sections or []
         print ('Course object created successfully!\n')
 
     def coursetofile(self, filename):

@@ -3,7 +3,7 @@ import urllib2
 
 import sys
 
-import Course
+from Course import Course, Section, Session
 import re
 import os
 from xml.etree import ElementTree
@@ -19,60 +19,65 @@ class ParseXML:
     def __init__(self, input_path, output_path):
         self.input_path = input_path
         self.output_path = output_path
-        self.course = None
-        self.course_title_full = ""
-        self.course_title_short = ""
-        self.sections = []
+
 
     def retrieve_course(self):
         """ Obtains all the course contents and pre-process it"""
+
+        self.course = Course()
+
         print('Getting course from file ' + self.input_path)
-        self.get_images(self.input_path, self.output_path)
-        self.get_contents(self.input_path)
+        file = open(self.input_path, "r")
+
+        print '\n========== COURSE PARSER ================='
+        i = 1
+        for url in file:
+            if "glossary" not in url:
+                print '\nSection '+str(i)+':'
+
+                self.get_contents(url)
+                self.get_images(url)
+            else:
+                print '\n"Glossary" Section:'
+
+            i += 1
+
+        file.close()
 
         cp = ContentPreprocessor.ContentPreprocessor(settings.XSL_FILE, self.course)
         cp.preprocess_course()
 
         return self.course
 
-    def get_contents(self, input_path):
+    def get_contents(self, url):
         """ Get the course contents from a .txt that contains the URLs to the course sections.
             The contents are get from the XML files of the course."""
 
-        print('\nGetting contents from XML files')
-        file = open(input_path, "r")
+        xml_url = URLUtils.get_file_url(url).rstrip()
+        try:
+            print '  > Downloading XML file... ',
+            response = urllib2.urlopen(xml_url)
+            section_xml = response.read()
+        except HTTPError as e:
+            print('The server couldn\'t fulfill the request.')
+            print('Error code: ', e.code)
+        except URLError as e:
+            print('We failed to reach a server.')
+            print('Reason: ', e.reason)
+        else:
+            print 'Done.'
+            self.parse_xml(section_xml)
+            response.close()
 
-        i = 1
-        for url in file:
-            if "glossary" not in url:
-                xml_url = URLUtils.get_file_url(url)
-                try:
-                    print('Requesting file ' + str(i) + '(' + xml_url.rstrip() + ')')
-                    response = urllib2.urlopen(xml_url)
-                    section_xml = response.read()
-                except HTTPError as e:
-                    print('The server couldn\'t fulfill the request.')
-                    print('Error code: ', e.code)
-                except URLError as e:
-                    print('We failed to reach a server.')
-                    print('Reason: ', e.reason)
-                else:
-                    print('Section ' + str(i) + ':')
-                    self.parse_xml(section_xml)
-                    response.close()
-            i += 1
-
-        file.close()
-        self.course = Course.Course(self.course_title_full, self.course_title_short, self.sections)
 
     def parse_xml(self, content):
         """ Parse the xml file and build the course"""
         element = ElementTree.fromstring(content)
 
-        if not self.course_title_full:
-            self.course_title_full = ElementTree.tostring(element.find('CourseTitle'), 'utf8', 'text')
-        if not self.course_title_short:
-            self.course_title_short = ElementTree.tostring(element.find('CourseCode'), 'utf8', 'text')
+        if not self.course.title_full:
+            self.course.title_full = ElementTree.tostring(element.find('CourseTitle'), 'utf8', 'text')
+        if not self.course.title_short:
+            self.course.title_short = ElementTree.tostring(element.find('CourseCode'), 'utf8', 'text')
 
         section_title = ElementTree.tostring(element.find('ItemTitle'), 'utf8', 'xml')
 
@@ -86,71 +91,63 @@ class ParseXML:
                 print '\r > Parsing References (' + str(i) + '/' + str(references_count) + ' - ' + progress + ').',
                 sys.stdout.flush()
                 references_title = '<Title>References</Title>'
-                content = ElementTree.tostring(reference, 'utf8', 'html')
-                sessions.append(Course.Session(references_title, content))
+                content = ElementTree.tostring(reference, 'utf8', 'xml')
+                sessions.append(Session(references_title, content))
                 i += 1
         elif session_count != 0:
             for session in element.iter('Session'):
                 progress = str(i * 100 / session_count) + '%'
-                print '\r > Parsing Sessions (' + str(i) + '/' + str(session_count) + ' - ' + progress + ').',
+                print '\r  > Parsing Sessions (' + str(i) + '/' + str(session_count) + ' - ' + progress + ').',
                 sys.stdout.flush()
                 session_title = ElementTree.tostring(session.find('Title'), 'utf8', 'xml')
-                print session_title
                 session.remove(session.find('Title'))
                 content = ElementTree.tostring(session, 'utf8', 'xml')
-                sessions.append(Course.Session(session_title, content))
+                sessions.append(Session(session_title, content))
                 i += 1
 
-        self.sections.append(Course.Section(section_title, sessions))
-        print 'Done.\n'
+        self.course.sections.append(Section(section_title, sessions))
+        print 'Done.'
 
-    def get_images(self, input_path, output_path):
-        """ Get the course images from a .txt that contains the URLs to the course sections.
+    def get_images(self, url):
+        """ Get the course images from a .t xt that contains the URLs to the course sections.
             The images are get from the RSS files of the course."""
 
-        print('\nGetting images from RSS files')
-        file = open(input_path, "r")
+        print '  > Getting RSS link from url...',
+        rss_url = URLUtils.get_file_url(url, 'rss')
+        if rss_url is None:
+            print 'RSS link not found in URL.'
+            return
+        else:
+            print 'Done.'
 
-        i = 1
-        for url in file:
-            if "glossary" not in url:
+        try:
+            #print('Requesting file ' + str(i) + '(' + rss_url.rstrip() + ')')
+            print '  > Downloading RSS file...',
+            response = urllib2.urlopen(rss_url)
+            rss_file = response.read()
+        except HTTPError as e:
+            print('The server couldn\'t fulfill the request.')
+            print('Error code: ', e.code)
+        except URLError as e:
+            print('We failed to reach a server.')
+            print('Reason: ', e.reason)
+        else:
+            print "Done. Processing each section images:"
+            self.download_images(rss_file)
+            response.close()
 
-                print 'Section '+str(i)+':\n  > Getting RSS link from url...',
-                rss_url = URLUtils.get_file_url(url, 'rss')
-                if rss_url is None:
-                    print 'RSS link not found in URL.'
-                    continue
-                else:
-                    print 'Done.'
 
-                try:
-                    #print('Requesting file ' + str(i) + '(' + rss_url.rstrip() + ')')
-                    print '  > Downloading RSS file...',
-                    response = urllib2.urlopen(rss_url)
-                    rss_file = response.read()
-                except HTTPError as e:
-                    print('The server couldn\'t fulfill the request.')
-                    print('Error code: ', e.code)
-                except URLError as e:
-                    print('We failed to reach a server.')
-                    print('Reason: ', e.reason)
-                else:
-                    print "Done."
-                    self.download_images(rss_file, output_path)
-                    response.close()
-            i += 1
-
-    def download_images(self, content, output_path):
+    def download_images(self, content):
         element = ElementTree.fromstring(content)
 
-        images_dir = os.path.join(output_path, 'temp', 'images')
+        images_dir = os.path.join(self.output_path, 'temp', 'images')
         if not os.path.exists(images_dir):
             os.makedirs(images_dir)
 
         i = 1
         for session in element.iter('item'):
             try:
-                print '* Session ' + str(i) + ":"
+                print '    * Session ' + str(i) + ":",
                 description = session.find('description')
                 #print description.text
                 images_list = re.findall('http[s]?://[^\s]*\.(?:jpg|JPG|png|PNG|jpeg|JPEG)', ElementTree.tostring(description, 'utf8', 'xml'))
@@ -159,12 +156,12 @@ class ParseXML:
                     i += 1
                     continue
                 else:
-                    print '   > Getting images from RSS file content... '
+                    print '\n      > Getting images from RSS file content... '
 
                     j = 0
                     for image_url in images_list:
                         progress = str(j * 100 / len(images_list)) + '%'
-                        print '\r   > Downloading images (' + progress + ')',
+                        print '\r     > Downloading images (' + progress + ')',
                         sys.stdout.flush()
                         filename = image_url.split("/")[-1].replace(".small", "")
                         response = urllib2.urlopen(image_url)
@@ -174,7 +171,7 @@ class ParseXML:
                         f.close()
 
                         j += 1
-                    print '\r   > Downloading images (100%). Done.'
+                    print '\r      > Downloading images (100%). Done.'
                     i += 1
             except AttributeError:
                 return
