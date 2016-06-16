@@ -14,11 +14,14 @@ class CourseUtils(object):
     def compress_course(src, type='mbz'):
         print '\n > Compressing course...',
         backup_name = src.split('/')[-1]
+        backup_path = os.path.join(src, backup_name)
 
         if type == 'mbz':
-            backup_name += '.mbz'
-            with tarfile.open(backup_name, "w:gz") as tar:
+            backup_path += '.mbz'
+            with tarfile.open(backup_path, "w:gz") as tar:
+                print tar
                 for file in listdir(src):
+                    print file
                     tar.add(os.path.join(src, file), arcname=file)
                 tar.close()
         elif type == 'zip':
@@ -31,14 +34,14 @@ class CourseUtils(object):
             print 'Error: Wrong backup extension.'
 
         print 'Done.'
-        return backup_name
+        return backup_path
 
     @staticmethod
     def get_course_name(course_title):
         if CourseUtils.course_name:
             return CourseUtils.course_name
         else:
-            return 'backup-moodle2-course-2-' + course_title +'-' + str(DT.today().strftime('%Y%m%d-%H%M')) + '-nu'
+            return course_title +'-' + str(DT.today().strftime('%Y%m%d%H%M'))
 
 
 def readonly_handler(func, path, exc):

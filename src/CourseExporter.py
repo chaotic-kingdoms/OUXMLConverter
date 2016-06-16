@@ -50,18 +50,25 @@ class CourseExporter:
 
         images_dir = os.path.join(settings.OUTPUT_PATH, 'temp', 'images')
         i = 1
+        progress = 0
         for image_file in listdir(images_dir):
             progress = str(i * 100 / len(listdir(images_dir))) + '%'
             print '\r  > Creating files directory... (' + progress + ')',
-            new_filename = hashlib.sha1(image_file).hexdigest()
-            self.files_values.append({'fileid': str(i), 'filename': image_file, 'file_hash': new_filename, 'timecreated': int(time.time())})
+            file_sha1 = hashlib.sha1(image_file).hexdigest()
+            self.files_values.append({'fileid': str(i), 'filename': image_file, 'file_hash': file_sha1, 'timecreated': int(time.time())})
 
-            os.rename(os.path.join(images_dir, image_file), os.path.join(images_dir, new_filename))
-            file_path = os.path.join(files_dir, new_filename[:2])
-            if not os.path.exists(file_path):
-                os.makedirs(file_path)
-            copy_file(os.path.join(images_dir, new_filename), os.path.join(settings.PROJECT_ROOT, file_path, new_filename))
+            source_path = os.path.join(images_dir, image_file)
+            image_rename = os.path.join(images_dir, file_sha1)
+            file_dirpath = os.path.join(files_dir, file_sha1[:2])
+
+            os.rename(source_path, image_rename)
+
+            if not os.path.exists(file_dirpath):
+                os.makedirs(file_dirpath)
+
+            copy_file(image_rename, file_dirpath)
             i += 1
+
         print '\r  > Creating files directory. (' + progress + ') Done.'
         remove_tree(images_dir)
 

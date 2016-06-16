@@ -1,3 +1,4 @@
+import shutil
 import sys
 from CourseParser import ParseXML
 from CourseExporter import CourseExporter
@@ -26,8 +27,9 @@ def main(argv):
         exporter = CourseExporter(course)
         exporter.generate_backup()
 
-        backup_name = CourseUtils.compress_course(settings.COURSE_DIR)
-        copy_file(os.path.join(settings.COURSE_DIR, backup_name), output_path)
+        backup_path = CourseUtils.compress_course(settings.COURSE_DIR)
+
+        copy_file(backup_path, output_path)
         remove_tree(os.path.join(output_path, 'temp'))
         print ('\nCourse created successfully at path: ' + output_path)
 
