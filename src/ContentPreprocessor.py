@@ -14,7 +14,7 @@ class ContentPreprocessor:
         self.course = course
 
     def preprocess_course(self):
-        """ Perform the course preprocessing. This include converting the course contents to HTML and optimize the
+        """ Perform the course pre-processing. This include converting the course contents to HTML and optimize the
             course images"""
         self.course_to_html()
         self.optimize_images()
@@ -24,13 +24,15 @@ class ContentPreprocessor:
         i = 1
         for section in self.course.sections:
             section.title = self.content_to_html(section.title)
+            progress = str(i * 100 / len(self.course.sections)) + '%'
+            print '\r> Applying XSLT to the course (' + progress + ')',
+            sys.stdout.flush()
+
             for session in section.sessions:
-                progress = str(i * 100 / len(section.sessions)) + '%'
-                print '\r> Applying XSLT to the course (' + progress + ')',
-                sys.stdout.flush()
                 session.title = self.content_to_html(session.title)
                 session.content = self.content_to_html(session.content)
-                i += 1
+
+            i += 1
         print '\r> Applying XSLT to the course (100%). Done.'
 
     def content_to_html(self, content):

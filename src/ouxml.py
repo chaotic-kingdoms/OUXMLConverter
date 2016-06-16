@@ -16,10 +16,12 @@ def main(argv):
         input_path = sys.argv[1]
         output_path = sys.argv[2]
         settings.OUTPUT_PATH = output_path
-        settings.COURSE_DIR = os.path.join(output_path, 'temp', CourseUtils.get_course_name())
 
         parser = ParseXML(input_path, output_path)
         course = parser.retrieve_course()
+
+        course_name = CourseUtils.get_course_name(course.title_full)
+        settings.COURSE_DIR = os.path.join(output_path, 'temp', course_name)
 
         exporter = CourseExporter(course)
         exporter.generate_backup()
@@ -27,12 +29,8 @@ def main(argv):
         backup_name = CourseUtils.compress_course(settings.COURSE_DIR)
         copy_file(os.path.join(settings.COURSE_DIR, backup_name), output_path)
         remove_tree(os.path.join(output_path, 'temp'))
+        print ('\nCourse created successfully at path: ' + output_path)
 
-
-def export_course(course, output_path):
-    """ Export all the course contents to an output path"""
-    CourseExporter.CourseExporter(course, output_path)
-    print ('\nCourse created successfully at path: ' + output_path)
 
 if __name__ == "__main__":
     main(sys.argv)

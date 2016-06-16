@@ -12,6 +12,7 @@ class CourseUtils(object):
 
     @staticmethod
     def compress_course(src, type='mbz'):
+        print '\n > Compressing course...',
         backup_name = src.split('/')[-1]
 
         if type == 'mbz':
@@ -29,16 +30,15 @@ class CourseUtils(object):
         else:
             print 'Error: Wrong backup extension.'
 
+        print 'Done.'
         return backup_name
 
     @staticmethod
-    def get_course_name():
+    def get_course_name(course_title):
         if CourseUtils.course_name:
             return CourseUtils.course_name
         else:
-            return 'backup-moodle2-course-2-Course-' + str(DT.today().year) \
-                           + str(DT.today().month) + str(DT.today().day) + '-' + str(DT.today().hour) \
-                           + str(DT.today().minute) + '-nu'
+            return 'backup-moodle2-course-2-' + course_title +'-' + str(DT.today().strftime('%Y%m%d-%H%M')) + '-nu'
 
 
 def readonly_handler(func, path, exc):

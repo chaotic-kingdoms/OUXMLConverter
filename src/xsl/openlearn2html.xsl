@@ -82,4 +82,12 @@
         <i><xsl:apply-templates/></i>
     </xsl:template>
 
+    <xsl:template match="a">
+        <a>
+            <xsl:attribute name="href"><xsl:value-of select="@href"/></xsl:attribute>
+            <xsl:value-of select="."/>
+        </a>
+    </xsl:template>
+
+
 </xsl:stylesheet>
