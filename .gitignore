@@ -3,3 +3,5 @@
 src/Course
 src/images
 *~
+dist/
+*.egg-info/
