@@ -1,5 +1,5 @@
 import os
-from os import listdir 
+from os import listdir
 import re
 import pystache
 import settings
@@ -18,45 +18,31 @@ from utils.CourseUtils import readonly_handler
 
 class CourseExporter:
 
-    section_values = []
-    session_values = []
-    files_values = []
 
-    def __init__(self, course, output_path):
-        self.generate_backup(course, output_path)
-        self.course_name = ""
-        self.course_dir = ""
+    def __init__(self, course):
+        self.course = course
+        self.section_values = []
+        self.session_values = []
+        self.files_values = []
 
-    def generate_backup(self, course, output_path):
+    def generate_backup(self):
         print('\nCreating moodle backup...')
-
-        self.course_name = 'backup-moodle2-course-2-Course-' + str(DT.today().year) \
-                            + str(DT.today().month) + str(DT.today().day) + '-' + str(DT.today().hour) \
-                            + str(DT.today().minute) + '-nu'
-
-        self.course_dir = os.path.join(output_path, 'temp', self.course_name)
-
-        self.copy_base_course(output_path)
-        self.generate_files_folder(output_path)
-        self.generate_sessions(course.sections)
-        self.generate_sections(course)
+        self.copy_base_course()
+        self.generate_files_folder()
+        self.generate_sessions(self.course.sections)
+        self.generate_sections(self.course)
         self.generate_files_file()
-        self.generate_moodle_backup_info(course)
+        self.generate_moodle_backup_info(self.course)
 
-        backup_name = CourseUtils.compress_course(self.course_dir)
-        #self.compress_course(course.title)
-        shutil.move(os.path.join(self.course_dir, backup_name), output_path)
-        remove_tree(os.path.join(output_path, 'temp'))
-
-    def copy_base_course(self, output_path):
+    def copy_base_course(self):
         """ Create all the base files needed to restore the course. """
-        if not os.path.exists(self.course_dir):
-            os.makedirs(self.course_dir)
-        copy_tree(settings.BASE_COURSE, self.course_dir)
+        if not os.path.exists(settings.COURSE_DIR):
+            os.makedirs(settings.COURSE_DIR)
+        copy_tree(settings.BASE_COURSE, settings.COURSE_DIR)
 
-    def generate_files_folder(self, output_path):
+    def generate_files_folder(self):
         """ Create 'files' directory where the course images are located"""
-        files_dir = os.path.join(self.course_dir, 'files')
+        files_dir = os.path.join(settings.COURSE_DIR, 'files')
         if os.path.exists(files_dir):
             try:
                 os.remove(os.path(files_dir))
@@ -65,7 +51,7 @@ class CourseExporter:
 
         os.makedirs(files_dir)
 
-        images_dir = os.path.join(output_path, 'temp', 'images')
+        images_dir = os.path.join(settings.OUTPUT_PATH, 'temp', 'images')
         i = 1
         for image_file in listdir(images_dir):
             new_filename = hashlib.sha1(image_file).hexdigest()
@@ -84,7 +70,7 @@ class CourseExporter:
         """ Generate all the files that include information about the sections"""
         print('\nGenerating sections...')
 
-        sections_dir = os.path.join(self.course_dir, "sections")
+        sections_dir = os.path.join(settings.COURSE_DIR, "sections")
 
         renderer = pystache.Renderer()
 
@@ -109,7 +95,7 @@ class CourseExporter:
         print '\r  > Generating sections (100%). Done.'
 
         # Add sections count to file course.xml within "course" directory
-        course_info_file = open(os.path.join(self.course_dir, "course", "course.xml"), "wb+")
+        course_info_file = open(os.path.join(settings.COURSE_DIR, "course", "course.xml"), "wb+")
         course_info_file.write(renderer.render_path(os.path.join(settings.TEMPLATES_ROOT, 'course_info.mustache'),
                                                     {'sections_count': len(course.sections),
                                                      'course_title_full': course.title_full,
@@ -119,7 +105,7 @@ class CourseExporter:
         """ Generate all the files that include information about the sessions"""
         print('\nGenerating sessions...')
 
-        activities_dir = os.path.join(self.course_dir, "activities")
+        activities_dir = os.path.join(settings.COURSE_DIR, "activities")
         if not os.path.exists(activities_dir):
             os.makedirs(activities_dir)
 
@@ -181,44 +167,20 @@ class CourseExporter:
         sys.stdout.flush()
         renderer = pystache.Renderer()
 
-        moodle_backup_file = open(os.path.join(self.course_dir, "moodle_backup.xml"), "wb+")
+        moodle_backup_file = open(os.path.join(settings.COURSE_DIR, "moodle_backup.xml"), "wb+")
         moodle_backup_file.write(renderer.render_path(os.path.join(settings.TEMPLATES_ROOT, 'moodle_backup.mustache'),
                                                       {'sessions': self.session_values, 'sections': self.section_values,
                                                        'course_title_full': course.title_full, 'course_title_short':course.title_short}))
         print 'Done.'
 
     def generate_session_base_files(self, sessionid):
-        page_dir = os.path.join(self.course_dir, "activities", "page_" + str(sessionid))
+        page_dir = os.path.join(settings.COURSE_DIR, "activities", "page_" + str(sessionid))
         copy_tree(settings.BASE_SESSION, page_dir)
 
     def generate_files_file(self):
         """ Generate the file files.xml"""
         renderer = pystache.Renderer()
 
-        files_file = open(os.path.join(self.course_dir, "files.xml"), "wb+")
+        files_file = open(os.path.join(settings.COURSE_DIR, "files.xml"), "wb+")
         files_file.write(renderer.render_path(os.path.join(settings.TEMPLATES_ROOT, 'files.mustache'),
                                               {'files': self.files_values}))
-
-    def compress_course(self, course_title, type='mbz'):
-        source_path = os.path.join(settings.PROJECT_ROOT, "Course")
-
-        if type == 'mbz':
-            with tarfile.open(self.coursename + '.mbz', "w:gz") as tar:
-                for file in listdir(source_path):
-                    tar.add(os.path.join("Course", file), arcname=file)
-                tar.close()
-        elif type == 'zip':
-            with zipfile(self.coursename + '.zip', 'w') as zip:
-                for file in listdir(source_path):
-                    zip.write(os.path.join("Course", file))
-                zip.close()
-        else:
-            print 'Error: Wrong backup extension.'
-
-        shutil.rmtree("Course", onerror=readonly_handler)
-
-
-    #def export_course(self, filename, output_path):
-    #    if not os.path.exists(output_path):
-    #        os.makedirs(output_path)
-    #    shutil.move(os.path.join(settings.PROJECT_ROOT, filename), os.path.join(output_path, filename))

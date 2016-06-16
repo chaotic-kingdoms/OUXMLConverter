@@ -1,17 +1,32 @@
 import sys
 from CourseParser import ParseXML
-import CourseExporter
+from CourseExporter import CourseExporter
+from utils.CourseUtils import CourseUtils
+import settings
+import os
+from distutils.dir_util import remove_tree
+import shutil
 
 
 def main(argv):
     if len(argv) != 3:
         print 'Wrong number of arguments.'
-        print 'Usage: TO-DO'
+        print 'Usage:'  # TODO
     else:
-        parser = ParseXML(str(sys.argv[1]), str(sys.argv[2]))
+        input_path = sys.argv[1]
+        output_path = sys.argv[2]
+        settings.OUTPUT_PATH = output_path
+        settings.COURSE_DIR = os.path.join(output_path, 'temp', CourseUtils.get_course_name())
+
+        parser = ParseXML(input_path, output_path)
         course = parser.retrieve_course()
 
-        CourseExporter.CourseExporter(course, str(sys.argv[2]))
+        exporter = CourseExporter(course)
+        exporter.generate_backup()
+
+        backup_name = CourseUtils.compress_course(settings.COURSE_DIR)
+        shutil.move(os.path.join(settings.COURSE_DIR, backup_name), output_path)
+        remove_tree(os.path.join(output_path, 'temp'))
 
 
 def export_course(course, output_path):
