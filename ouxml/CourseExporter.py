@@ -4,7 +4,8 @@ import time
 from distutils.dir_util import copy_tree
 from distutils.dir_util import remove_tree
 from distutils.file_util import copy_file
-from utils.CourseUtils import CourseUtils
+
+from lxml import html
 
 import os
 import pystache
@@ -55,7 +56,7 @@ class CourseExporter:
 
         os.makedirs(files_dir)
 
-        images_dir = os.path.join(self.output_path, settings.TEMP, 'images')
+        images_dir = os.path.join(self.output_path, settings.TEMP_FOLDER, 'images')
         image_files = os.listdir(images_dir)
 
         for i, image_file in enumerate(image_files, start=1):
@@ -137,6 +138,10 @@ class CourseExporter:
             sys.stdout.flush()
 
             for session in section.sessions:
+
+                session.title = html.fromstring(session.title).text_content()
+                session.remove_title_numbering()
+
                 self.session_values.append({'sessionid': sessionid,
                                             'sectionid': sectionid,
                                             'title': session.title.rstrip(),
@@ -163,7 +168,6 @@ class CourseExporter:
                     # self.files_values.append({'filename': filename, 'contextid':contextid})
 
                 page_file = open(page_dir + "/page.xml", "wb+")
-                print new_content
                 page_file.write(renderer.render_path(self.get_template('activity_page'),
                                      {'id': sessionid,
                                       'title': session.title,

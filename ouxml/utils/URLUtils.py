@@ -31,7 +31,6 @@ class URLUtils(object):
         else:
             return None
 
-
     @staticmethod
     def url_for_xml(url):
         return URLUtils.replace_qs_param(url.strip(), {'content':'scxml'})
@@ -62,7 +61,6 @@ class URLUtils(object):
         ).geturl()
 
         return new_url
-
 
     @staticmethod
     def __url_for_scrappable_format(url, ouformat):

@@ -47,7 +47,6 @@ class CourseParser:
         """ Get the course contents from a .txt that contains the URLs to the course sections.
             The contents are get from the XML files of the course."""
         xml_url = URLUtils.get_format_url(url)
-        print xml_url
         print '  > Downloading XML file... ',
         err, section_xml = URLUtils.get(xml_url)
         if not err:

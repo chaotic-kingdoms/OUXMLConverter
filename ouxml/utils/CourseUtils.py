@@ -1,10 +1,9 @@
-import os
-from os import listdir
 import tarfile
 import zipfile
-import stat
 from datetime import datetime as DT
-import settings
+
+import os
+from os import listdir
 
 
 class CourseUtils(object):
