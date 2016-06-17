@@ -87,16 +87,15 @@ class Glossary:
 
     def to_section(self):
         renderer = pystache.Renderer()
-        items = []
         sessions = []
 
         for key, value in self.glossary_items.iteritems():
 
+            items = []
             for item in value:
                 items.append({'concept': item.concept, 'definition': item.definition})
 
             content = renderer.render_path(os.path.join(settings.TEMPLATES_ROOT, 'glossary.mustache'), {'items': items})
-            print content
             session_title = renderer.render_path(os.path.join(settings.TEMPLATES_ROOT, 'title.mustache'), {'value': key})
             sessions.append(Session(session_title, content))
 
