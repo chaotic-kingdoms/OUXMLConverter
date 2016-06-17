@@ -1,3 +1,4 @@
+import re
 
 
 class Course:
@@ -13,14 +14,14 @@ class Course:
     def coursetofile(self, filename):
         """Write the complete course to a file"""
         print('\nWriting course to the file ' + filename)
-        file = open(filename, "w+")
-        file.write(self.title_full + "\n")
+        f = open(filename, "w+")
+        f.write(self.title_full + "\n")
         for section in self.sections:
-            file.write(section.title + "\n")
+            f.write(section.title + "\n")
             for session in section.sessions:
-                file.write(session.title + "\n")
-                file.write(session.content + "\n")
-        file.close()
+                f.write(session.title + "\n")
+                f.write(session.content + "\n")
+        f.close()
 
 
 class Section:
@@ -32,6 +33,11 @@ class Section:
         self.title = title
         self.sessions = sessions
 
+    def remove_title_numbering(self):
+        self.title = re.sub('^([0-9]+\.?)+\s*', '', self.title)
+        self.title = re.sub('^Study Session [0-9]+\s*', '', self.title)
+
+
 class Session:
 
     title = ""
@@ -40,3 +46,6 @@ class Session:
     def __init__(self, title, content):
         self.title = title
         self.content = content
+
+    def remove_title_numbering(self):
+        self.title = re.sub('^([0-9]+\.?)+\s*', '', self.title)

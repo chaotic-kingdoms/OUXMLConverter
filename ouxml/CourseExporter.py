@@ -4,6 +4,9 @@ import time
 from distutils.dir_util import copy_tree
 from distutils.dir_util import remove_tree
 from distutils.file_util import copy_file
+
+from lxml import html
+
 from utils.CourseUtils import CourseUtils
 
 import os
@@ -137,6 +140,10 @@ class CourseExporter:
             sys.stdout.flush()
 
             for session in section.sessions:
+
+                session.title = html.fromstring(session.title).text_content()
+                session.remove_title_numbering()
+
                 self.session_values.append({'sessionid': sessionid,
                                             'sectionid': sectionid,
                                             'title': session.title.rstrip(),
@@ -163,7 +170,6 @@ class CourseExporter:
                     # self.files_values.append({'filename': filename, 'contextid':contextid})
 
                 page_file = open(page_dir + "/page.xml", "wb+")
-                print new_content
                 page_file.write(renderer.render_path(self.get_template('activity_page'),
                                      {'id': sessionid,
                                       'title': session.title,

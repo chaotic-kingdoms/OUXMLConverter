@@ -1,6 +1,8 @@
+import re
 import sys
 
 import lxml.etree as ET
+from lxml import html
 import os
 from PIL import Image
 from os import listdir
@@ -24,9 +26,12 @@ class ContentPreprocessor:
 
     def course_to_html(self):
 
-        i = 1
-        for section in self.course.sections:
+        for i, section in enumerate(self.course.sections):
+
             section.title = self.content_to_html(section.title)
+            section.title = html.fromstring(section.title).text_content()  # clean up tags
+            section.remove_title_numbering()
+            
             progress = str(i * 100 / len(self.course.sections)) + '%'
             print '\r  > Applying XSLT to the course (' + progress + ')',
             sys.stdout.flush()
@@ -35,7 +40,6 @@ class ContentPreprocessor:
                 session.title = self.content_to_html(session.title)
                 session.content = self.content_to_html(session.content)
 
-            i += 1
         print '\r  > Applying XSLT to the course (100%). Done.'
 
     def content_to_html(self, content):
@@ -45,7 +49,8 @@ class ContentPreprocessor:
         xslt = ET.parse(self.xsl_file)
         transform = ET.XSLT(xslt)
         newdom = transform(dom)
-        return ET.tostring(newdom, pretty_print=True).replace('&#160;', '')
+
+        return re.sub('(&#160;)+', ' ', ET.tostring(newdom, pretty_print=True))
 
     def optimize_images(self):
         images_dir = os.path.join(settings.OUTPUT_PATH, 'temp', 'images')
