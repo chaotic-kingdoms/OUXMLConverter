@@ -1,7 +1,8 @@
-import urllib2
-from urllib2 import HTTPError, URLError
+import urllib
 
+import requests
 from lxml import html
+from urlparse import urlparse, parse_qsl, ParseResult
 
 # Possible parseable contents and their labels in the page
 content_types = {
@@ -26,7 +27,35 @@ class URLUtils(object):
 
     @staticmethod
     def url_for_xml(url):
-        return  url.strip() + ('&' if '?' in url else '?') + 'content=scxml'
+        return URLUtils.replace_qs_param(url.strip(), {'content':'scxml'})
+
+    @staticmethod
+    def replace_qs_param(url, params):
+        """ Add GET params to provided URL being aware of existing.
+        from: http://stackoverflow.com/a/25580545
+
+        :param url: string of target URL
+        :param params: dict containing requested params to be added
+        :return: string with updated URL
+        """
+
+        url = urllib.unquote(url)
+        parsed_url = urlparse(url)
+        get_args = parsed_url.query
+
+        # Converting URL arguments to dict and update
+        parsed_get_args = dict(parse_qsl(get_args))
+        parsed_get_args.update(params)
+
+        # Converting URL argument to proper query string
+        encoded_get_args = urllib.urlencode(parsed_get_args, doseq=True)
+        new_url = ParseResult(
+            parsed_url.scheme, parsed_url.netloc, parsed_url.path,
+            parsed_url.params, encoded_get_args, parsed_url.fragment
+        ).geturl()
+
+        return new_url
+
 
     @staticmethod
     def url_for_scrappable_format(url, ouformat):
@@ -56,15 +85,16 @@ class URLUtils(object):
         response = None
         result = None
         try:
-            response = urllib2.urlopen(url)
-            content = response.read()
-        except HTTPError as e:
+            response = requests.get(url)
+            response.raise_for_status()
+            content = response.content
+        except requests.HTTPError as e:
             print('The server couldn\'t fulfill the request.')
-            print('Error code: ', e.code)
+            print('Error code: ', e.response.status_code)
             result = e, None
-        except URLError as e:
+        except requests.exceptions.RequestException as e:
             print('We failed to reach a server.')
-            print('Reason: ', e.reason)
+            print('Reason: ', e)
             result = e, None
         else:
             result = None, content
