@@ -4,6 +4,7 @@ import tarfile
 import zipfile
 import stat
 from datetime import datetime as DT
+import settings
 
 
 class CourseUtils(object):
@@ -12,7 +13,7 @@ class CourseUtils(object):
 
     @staticmethod
     def compress_course(src, type='mbz'):
-        print '\n > Compressing course...',
+        print '\n> Compressing course...',
         backup_name = src.split('/')[-1]
         backup_path = os.path.join(src, backup_name)
 
@@ -40,9 +41,6 @@ class CourseUtils(object):
         if CourseUtils.course_name:
             return CourseUtils.course_name
         else:
-            return course_title +'-' + str(DT.today().strftime('%Y%m%d%H%M'))
+            return course_title + '-' + str(DT.today().strftime('%Y%m%d%H%M'))
 
 
-def readonly_handler(func, path, exc):
-    os.chmod(path, stat.S_IWRITE)
-    func(path)

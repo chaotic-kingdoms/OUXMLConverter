@@ -4,6 +4,7 @@ import time
 from distutils.dir_util import copy_tree
 from distutils.dir_util import remove_tree
 from distutils.file_util import copy_file
+from utils.CourseUtils import CourseUtils
 
 import os
 import pystache
@@ -13,10 +14,13 @@ import settings
 
 renderer = pystache.Renderer()
 
+
 class CourseExporter:
 
-    def __init__(self, course):
+    def __init__(self, course, output_path, course_dir):
         self.course = course
+        self.output_path = output_path
+        self.course_dir = course_dir
         self.section_values = []
         self.session_values = []
         self.files_values = []
@@ -29,20 +33,20 @@ class CourseExporter:
         self.generate_sessions()
         self.generate_sections()
         self.generate_files_file()
-        self.generate_moodle_backup_info(self.course)
+        self.generate_moodle_backup_info()
 
     def copy_base_course(self):
         """ Create all the base files needed to restore the course. """
         print '  > Creating course base files... ',
-        if not os.path.exists(settings.COURSE_DIR):
-            os.makedirs(settings.COURSE_DIR)
-        copy_tree(settings.BASE_COURSE, settings.COURSE_DIR)
+        if not os.path.exists(self.course_dir):
+            os.makedirs(self.course_dir)
+        copy_tree(settings.BASE_COURSE, self.course_dir)
         print 'Done.'
 
     def generate_files_folder(self):
         """ Create 'files' directory where the course images are located"""
         print '  > Creating files directory...',
-        files_dir = os.path.join(settings.COURSE_DIR, 'files')
+        files_dir = os.path.join(self.course_dir, 'files')
         if os.path.exists(files_dir):
             try:
                 os.remove(os.path.abspath(files_dir))
@@ -51,7 +55,7 @@ class CourseExporter:
 
         os.makedirs(files_dir)
 
-        images_dir = os.path.join(settings.OUTPUT_PATH, 'temp', 'images')
+        images_dir = os.path.join(self.output_path, settings.TEMP, 'images')
         image_files = os.listdir(images_dir)
 
         for i, image_file in enumerate(image_files, start=1):
@@ -86,7 +90,7 @@ class CourseExporter:
     def generate_sections(self):
         """ Generate all the files that include information about the sections"""
 
-        sections_dir = os.path.join(settings.COURSE_DIR, "sections")
+        sections_dir = os.path.join(self.course_dir, "sections")
         num_sections = len(self.course.sections)
 
         # Create section.xml files within the "sections" directory
@@ -112,7 +116,7 @@ class CourseExporter:
         print '\r  > Generating sections (100%). Done.'
 
         # Add sections count to file course.xml within "course" directory
-        course_info_file = open(os.path.join(settings.COURSE_DIR, "course", "course.xml"), "wb+")
+        course_info_file = open(os.path.join(self.course_dir, "course", "course.xml"), "wb+")
         course_info_file.write(renderer.render_path(self.get_template('course_info'), {
                                     'sections_count': num_sections,
                                     'course_title_full': self.course.title_full,
@@ -121,18 +125,21 @@ class CourseExporter:
     def generate_sessions(self):
         """ Generate all the files that include information about the sessions"""
 
-        activities_dir = os.path.join(settings.COURSE_DIR, "activities")
+        activities_dir = os.path.join(self.course_dir, "activities")
         if not os.path.exists(activities_dir):
             os.makedirs(activities_dir)
         num_sections = len(self.course.sections)
 
+        sessionid = 1
         for sectionid, section in enumerate(self.course.sections, start=1):
             progress = str(sectionid * 100 / num_sections) + '%'
             print '\r  > Generating sessions (' + progress + ')',
             sys.stdout.flush()
 
-            for sessionid, session in enumerate(section.sessions, start=1):
-                self.session_values.append({'sessionid': sessionid, 'sectionid': sectionid, 'title': session.title.rstrip(),
+            for session in section.sessions:
+                self.session_values.append({'sessionid': sessionid,
+                                            'sectionid': sectionid,
+                                            'title': session.title.rstrip(),
                                             'session_directory': 'activities/page_' + str(sessionid)})
                 page_dir = os.path.join(activities_dir, 'page_' + str(sessionid))
                 if not os.path.exists(page_dir):
@@ -156,8 +163,11 @@ class CourseExporter:
                     # self.files_values.append({'filename': filename, 'contextid':contextid})
 
                 page_file = open(page_dir + "/page.xml", "wb+")
+                print new_content
                 page_file.write(renderer.render_path(self.get_template('activity_page'),
-                                     {'id': sessionid, 'title': session.title, 'content': new_content}))
+                                     {'id': sessionid,
+                                      'title': session.title,
+                                      'content': new_content}))
                 page_file.close()
 
                 # Create "inforef.xml" file
@@ -170,32 +180,33 @@ class CourseExporter:
                 inforef_file.write(renderer.render_path(self.get_template('inforef'),
                                         { 'files': files, 'fileid': sessionid }))
                 inforef_file.close()
+                sessionid += 1
 
         print '\r  > Generating sessions (100%). Done.'
 
-    def generate_moodle_backup_info(self, course):
+    def generate_moodle_backup_info(self):
         """ Generate the file 'moodle_backup.xml'"""
         print('  > Creating moodle_backup.xml... '),
         sys.stdout.flush()
 
-        moodle_backup_file = open(os.path.join(settings.COURSE_DIR, "moodle_backup.xml"), "wb+")
+        moodle_backup_file = open(os.path.join(self.course_dir, "moodle_backup.xml"), "wb+")
         moodle_backup_file.write(renderer.render_path(self.get_template('moodle_backup'), {
                                             'sessions': self.session_values,
                                             'sections': self.section_values,
-                                            'course_title_full': course.title_full,
-                                            'course_title_short':course.title_short
+                                            'course_title_full': self.course.title_full,
+                                            'course_title_short': self.course.title_short
                                           }))
         print 'Done.'
 
     def generate_session_base_files(self, sessionid):
-        page_dir = os.path.join(settings.COURSE_DIR, "activities", "page_" + str(sessionid))
+        page_dir = os.path.join(self.course_dir, "activities", "page_" + str(sessionid))
         copy_tree(settings.BASE_SESSION, page_dir)
 
     def generate_files_file(self):
         """ Generate the file files.xml"""
         print '  > Creating files.xml... ',
 
-        files_file = open(os.path.join(settings.COURSE_DIR, "files.xml"), "wb+")
+        files_file = open(os.path.join(self.course_dir, "files.xml"), "wb+")
         files_file.write(renderer.render_path(self.get_template('files'),
                                               {'files': self.files_values}))
         print 'Done.'

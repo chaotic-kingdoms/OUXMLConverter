@@ -23,12 +23,12 @@ def main(argv):
         course = parser.retrieve_course()
 
         course_name = CourseUtils.get_course_name(course.title_full)
-        settings.COURSE_DIR = os.path.join(output_path, 'temp', course_name)
+        course_dir = os.path.join(output_path, settings.TEMP, course_name)
 
-        exporter = CourseExporter(course)
+        exporter = CourseExporter(course, output_path, course_dir)
         exporter.generate_backup()
 
-        backup_path = CourseUtils.compress_course(settings.COURSE_DIR)
+        backup_path = CourseUtils.compress_course(course_dir)
 
         copy_file(backup_path, output_path)
         remove_tree(os.path.join(output_path, 'temp'))

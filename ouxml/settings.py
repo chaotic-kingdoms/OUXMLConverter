@@ -6,5 +6,4 @@ TEMPLATES_ROOT = os.path.join(RESOURCES_PATH, 'templates')
 XSL_FILE = os.path.join(RESOURCES_PATH, 'xsl', 'openlearn2html.xsl')
 BASE_COURSE = os.path.join(RESOURCES_PATH, 'base', 'course')
 BASE_SESSION = os.path.join(RESOURCES_PATH, 'base', 'session')
-OUTPUT_PATH = ""
-COURSE_DIR = ""
+TEMP = 'temp'

@@ -3,9 +3,7 @@
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
     <xsl:template match="/">
-        <html>
-            <xsl:apply-templates/>
-        </html>
+        <p><xsl:apply-templates/></p>
     </xsl:template>
 
     <xsl:template match="Paragraph|Reference">
@@ -89,6 +87,10 @@
             <xsl:attribute name="href"><xsl:value-of select="@href"/></xsl:attribute>
             <xsl:value-of select="."/>
         </a>
+    </xsl:template>
+
+    <xsl:template match="b/">
+        <xsl:apply-templates/>
     </xsl:template>
 
 

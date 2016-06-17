@@ -63,30 +63,23 @@ class CourseParser:
         if not self.course.title_short:
             self.course.title_short = ElementTree.tostring(element.find('CourseCode'), 'utf8', 'text')
 
-        section_title = ElementTree.tostring(element.find('ItemTitle'), 'utf8', 'xml')
+        section_title = ElementTree.tostring(element.find('ItemTitle'), 'utf8', 'text')
+        section_title = re.sub('^([0-9]+\.?)+', '', section_title)
+        print section_title
 
         sessions = []
         session_count = len(element.findall('.//Session'))
-        references_count = len(element.findall('.//Reference'))
 
-        if references_count != 0:
-            for i, reference in enumerate(element.iter('Session'), start=1):
-                progress = str(i * 100 / references_count) + '%'
-                print '\r  > Parsing References (' + str(i) + '/' + str(references_count) + ' - ' + progress + ').',
-                sys.stdout.flush()
-                references_title = '<Title>References</Title>'
-                content = ElementTree.tostring(reference, 'utf8', 'xml')
-                sessions.append(Session(references_title, content))
-
-        elif session_count != 0:
-            for i, session in enumerate(element.iter('Session'), start=1):
-                progress = str(i * 100 / session_count) + '%'
-                print '\r  > Parsing Sessions (' + str(i) + '/' + str(session_count) + ' - ' + progress + ').',
-                sys.stdout.flush()
-                session_title = ElementTree.tostring(session.find('Title'), 'utf8', 'xml')
-                session.remove(session.find('Title'))
-                content = ElementTree.tostring(session, 'utf8', 'xml')
-                sessions.append(Session(session_title, content))
+        for i, session in enumerate(element.iter('Session'), start=1):
+            progress = str(i * 100 / session_count) + '%'
+            print '\r  > Parsing Sessions (' + str(i) + '/' + str(session_count) + ' - ' + progress + ').',
+            sys.stdout.flush()
+            session_title = ElementTree.tostring(session.find('Title'), 'utf8', 'text')
+            session_title = re.sub('^([0-9]+\.?)+', '', session_title)
+            print session_title
+            session.remove(session.find('Title'))
+            content = ElementTree.tostring(session, 'utf8', 'xml')
+            sessions.append(Session(session_title, content))
 
         self.course.sections.append(Section(section_title, sessions))
         print 'Done.'

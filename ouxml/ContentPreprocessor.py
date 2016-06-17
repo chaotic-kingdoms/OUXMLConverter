@@ -26,13 +26,13 @@ class ContentPreprocessor:
 
         i = 1
         for section in self.course.sections:
-            section.title = self.content_to_html(section.title)
+            #section.title = self.content_to_html(section.title)
             progress = str(i * 100 / len(self.course.sections)) + '%'
             print '\r  > Applying XSLT to the course (' + progress + ')',
             sys.stdout.flush()
 
             for session in section.sessions:
-                session.title = self.content_to_html(session.title)
+                #session.title = self.content_to_html(session.title)
                 session.content = self.content_to_html(session.content)
 
             i += 1
@@ -45,7 +45,7 @@ class ContentPreprocessor:
         xslt = ET.parse(self.xsl_file)
         transform = ET.XSLT(xslt)
         newdom = transform(dom)
-        return ET.tostring(newdom, pretty_print=True)
+        return ET.tostring(newdom, pretty_print=True).replace('&#160;', ' ')
 
     def optimize_images(self):
         images_dir = os.path.join(settings.OUTPUT_PATH, 'temp', 'images')
