@@ -3,6 +3,7 @@ from xml.etree import ElementTree
 
 import os
 import re
+from lxml import html
 
 import ContentPreprocessor
 import settings
@@ -46,6 +47,7 @@ class CourseParser:
         """ Get the course contents from a .txt that contains the URLs to the course sections.
             The contents are get from the XML files of the course."""
         xml_url = URLUtils.get_format_url(url)
+        print xml_url
         print '  > Downloading XML file... ',
         err, section_xml = URLUtils.get(xml_url)
         if not err:
@@ -144,4 +146,18 @@ class CourseParser:
                 return
 
     def get_glossary(self, url):
-        pass
+
+        glossary_url = URLUtils.replace_qs_param(url, {'page':'-1'})
+        err, page = URLUtils.get(glossary_url)
+        if not err:
+            entries = html.fromstring(page).cssselect('.glossarypost td.entry')
+            for entry in entries:
+                concept = entry.cssselect('.concept')
+                definition = entry.cssselect('.no-overflow')
+
+                if not concept or not definition:
+                    continue
+
+                print concept[0].text_content()
+                print definition[0].text_content()
+                print
