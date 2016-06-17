@@ -18,27 +18,23 @@ class CourseParser:
         self.input_path = input_path
         self.output_path = output_path
 
+        self.course = Course()
 
     def retrieve_course(self):
         """ Obtains all the course contents and pre-process it"""
-
-        self.course = Course()
 
         print('Getting course from file ' + self.input_path)
         file = open(self.input_path, "r")
 
         print '\n========== COURSE PARSER ================='
-        i = 1
-        for url in file:
+        for section_idx, url in enumerate(file, start=1):
             if "glossary" not in url:
-                print '\nSection '+str(i)+':'
+                print '\nSection %d:' % section_idx
 
                 self.get_contents(url)
                 self.get_images(url)
             else:
                 print '\n"Glossary" Section:'
-
-            i += 1
 
         file.close()
 
@@ -67,7 +63,6 @@ class CourseParser:
             self.parse_xml(section_xml)
             response.close()
 
-
     def parse_xml(self, content):
         """ Parse the xml file and build the course"""
         element = ElementTree.fromstring(content)
@@ -80,20 +75,20 @@ class CourseParser:
         section_title = ElementTree.tostring(element.find('ItemTitle'), 'utf8', 'xml')
 
         sessions = []
-        i = 1
         session_count = len(element.findall('.//Session'))
         references_count = len(element.findall('.//Reference'))
+
         if references_count != 0:
-            for reference in element.iter('Session'):
+            for i, reference in enumerate(element.iter('Session'), start=1):
                 progress = str(i * 100 / references_count) + '%'
-                print '\r > Parsing References (' + str(i) + '/' + str(references_count) + ' - ' + progress + ').',
+                print '\r  > Parsing References (' + str(i) + '/' + str(references_count) + ' - ' + progress + ').',
                 sys.stdout.flush()
                 references_title = '<Title>References</Title>'
                 content = ElementTree.tostring(reference, 'utf8', 'xml')
                 sessions.append(Session(references_title, content))
-                i += 1
+
         elif session_count != 0:
-            for session in element.iter('Session'):
+            for i, session in enumerate(element.iter('Session'), start=1):
                 progress = str(i * 100 / session_count) + '%'
                 print '\r  > Parsing Sessions (' + str(i) + '/' + str(session_count) + ' - ' + progress + ').',
                 sys.stdout.flush()
@@ -101,7 +96,7 @@ class CourseParser:
                 session.remove(session.find('Title'))
                 content = ElementTree.tostring(session, 'utf8', 'xml')
                 sessions.append(Session(session_title, content))
-                i += 1
+
 
         self.course.sections.append(Section(section_title, sessions))
         print 'Done.'
@@ -119,7 +114,7 @@ class CourseParser:
             print 'Done.'
 
         try:
-            #print('Requesting file ' + str(i) + '(' + rss_url.rstrip() + ')')
+            # print('Requesting file ' + str(i) + '(' + rss_url.rstrip() + ')')
             print '  > Downloading RSS file...',
             response = urllib2.urlopen(rss_url)
             rss_file = response.read()
@@ -134,7 +129,6 @@ class CourseParser:
             self.download_images(rss_file)
             response.close()
 
-
     def download_images(self, content):
         element = ElementTree.fromstring(content)
 
@@ -142,13 +136,12 @@ class CourseParser:
         if not os.path.exists(images_dir):
             os.makedirs(images_dir)
 
-        i = 1
-        for session in element.iter('item'):
+        for i, session in enumerate(element.iter('item'), start=1):
             try:
                 print '    * Session ' + str(i) + ":",
-                description = session.find('description')
-                #print description.text
-                images_list = re.findall('http[s]?://[^\s]*\.(?:jpg|JPG|png|PNG|jpeg|JPEG)', ElementTree.tostring(description, 'utf8', 'xml'))
+                description = ElementTree.tostring(session.find('description'), 'utf8', 'xml')
+                # print description.text
+                images_list = re.findall('http[s]?://[^\s]*\.(?:jpg|JPG|png|PNG|jpeg|JPEG)', description)
                 if len(images_list) == 0:
                     print 'No images to download.'
                     i += 1
@@ -170,7 +163,6 @@ class CourseParser:
 
                         j += 1
                     print '\r      > Downloading images (100%). Done.'
-                    i += 1
+
             except AttributeError:
                 return
-
