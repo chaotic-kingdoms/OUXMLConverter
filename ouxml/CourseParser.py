@@ -7,7 +7,7 @@ from lxml import html
 
 import ContentPreprocessor
 import settings
-from model import Course, Section, Session
+from model import Course, Section, Session, Glossary, GlossaryItem
 from utils.URLUtils import URLUtils
 
 
@@ -136,10 +136,10 @@ class CourseParser:
                 return
 
     def get_glossary(self, url):
-
         glossary_url = URLUtils.replace_qs_param(url, {'page':'-1'})
         err, page = URLUtils.get(glossary_url)
         if not err:
+            glossary_items = dict()
             entries = html.fromstring(page).cssselect('.glossarypost td.entry')
             for entry in entries:
                 concept = entry.cssselect('.concept')
@@ -148,6 +148,14 @@ class CourseParser:
                 if not concept or not definition:
                     continue
 
-                print concept[0].text_content()
-                print definition[0].text_content()
-                print
+                glossary_item = GlossaryItem(concept[0].text_content(), definition[0].text_content())
+                key = concept[0].text_content()[0].upper()
+                if key in glossary_items:
+                    glossary_items[key].append(glossary_item)
+                else:
+                    glossary_items[key] = [glossary_item]
+        glossary = Glossary(glossary_items)
+        glossary.group()
+        self.course.sections.append(glossary.to_section())
+
+

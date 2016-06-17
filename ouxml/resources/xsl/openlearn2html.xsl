@@ -89,9 +89,8 @@
         </a>
     </xsl:template>
 
-    <xsl:template match="b/">
-        <xsl:apply-templates/>
+    <xsl:template match="h1">
+        <h1> <xsl:apply-templates/></h1>
     </xsl:template>
-
 
 </xsl:stylesheet>
