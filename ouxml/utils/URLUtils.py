@@ -16,11 +16,18 @@ class URLUtils(object):
 
     @staticmethod
     def get_format_url(url, ouformat='xml'):
+        """ Returns the url of the session in the format provided.
+        If the format is other than 'xml', it fetches the page and parses the link for the requested format
+
+        :param url: string of OU Session URL
+        :param ouformat: identifier of the wanted format
+        :return: string with URL for that format, or None if not found
+        """
 
         if ouformat is 'xml':
             return URLUtils.url_for_xml(url)
         elif ouformat in content_types:
-            return URLUtils.url_for_scrappable_format(url, ouformat)
+            return URLUtils.__url_for_scrappable_format(url, ouformat)
         else:
             return None
 
@@ -58,7 +65,7 @@ class URLUtils(object):
 
 
     @staticmethod
-    def url_for_scrappable_format(url, ouformat):
+    def __url_for_scrappable_format(url, ouformat):
         err, page = URLUtils.get(url)
         if err:
             return None
