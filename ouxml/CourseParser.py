@@ -1,6 +1,4 @@
 import sys
-import urllib2
-from urllib2 import HTTPError, URLError
 from xml.etree import ElementTree
 
 import os
@@ -24,10 +22,10 @@ class CourseParser:
         """ Obtains all the course contents and pre-process it"""
 
         print('Getting course from file ' + self.input_path)
-        file = open(self.input_path, "r")
+        sections_list = open(self.input_path, "r")
 
         print '\n========== COURSE PARSER ================='
-        for section_idx, url in enumerate(file, start=1):
+        for section_idx, url in enumerate(sections_list, start=1):
             if "glossary" not in url:
                 print '\nSection %d:' % section_idx
 
@@ -35,8 +33,9 @@ class CourseParser:
                 self.get_images(url)
             else:
                 print '\n"Glossary" Section:'
+                self.get_glossary(url)
 
-        file.close()
+        sections_list.close()
 
         cp = ContentPreprocessor.ContentPreprocessor(settings.XSL_FILE, self.course)
         cp.preprocess_course()
@@ -46,22 +45,12 @@ class CourseParser:
     def get_contents(self, url):
         """ Get the course contents from a .txt that contains the URLs to the course sections.
             The contents are get from the XML files of the course."""
-
-        xml_url = URLUtils.get_file_url(url).rstrip()
-        try:
-            print '  > Downloading XML file... ',
-            response = urllib2.urlopen(xml_url)
-            section_xml = response.read()
-        except HTTPError as e:
-            print('The server couldn\'t fulfill the request.')
-            print('Error code: ', e.code)
-        except URLError as e:
-            print('We failed to reach a server.')
-            print('Reason: ', e.reason)
-        else:
+        xml_url = URLUtils.get_format_url(url)
+        print '  > Downloading XML file... ',
+        err, section_xml = URLUtils.get(xml_url)
+        if not err:
             print 'Done.'
             self.parse_xml(section_xml)
-            response.close()
 
     def parse_xml(self, content):
         """ Parse the xml file and build the course"""
@@ -97,7 +86,6 @@ class CourseParser:
                 content = ElementTree.tostring(session, 'utf8', 'xml')
                 sessions.append(Session(session_title, content))
 
-
         self.course.sections.append(Section(section_title, sessions))
         print 'Done.'
 
@@ -106,28 +94,18 @@ class CourseParser:
             The images are get from the RSS files of the course."""
 
         print '  > Getting RSS link from url...',
-        rss_url = URLUtils.get_file_url(url, 'rss')
+        rss_url = URLUtils.get_format_url(url, 'rss')
         if rss_url is None:
             print 'RSS link not found in URL.'
             return
         else:
             print 'Done.'
 
-        try:
-            # print('Requesting file ' + str(i) + '(' + rss_url.rstrip() + ')')
-            print '  > Downloading RSS file...',
-            response = urllib2.urlopen(rss_url)
-            rss_file = response.read()
-        except HTTPError as e:
-            print('The server couldn\'t fulfill the request.')
-            print('Error code: ', e.code)
-        except URLError as e:
-            print('We failed to reach a server.')
-            print('Reason: ', e.reason)
-        else:
+        print '  > Downloading RSS file...',
+        err, rss_file = URLUtils.get(rss_url)
+        if not err:
             print "Done. Processing each section images:"
             self.download_images(rss_file)
-            response.close()
 
     def download_images(self, content):
         element = ElementTree.fromstring(content)
@@ -144,25 +122,26 @@ class CourseParser:
                 images_list = re.findall('http[s]?://[^\s]*\.(?:jpg|JPG|png|PNG|jpeg|JPEG)', description)
                 if len(images_list) == 0:
                     print 'No images to download.'
-                    i += 1
                     continue
                 else:
                     print '\n      > Getting images from RSS file content... '
 
-                    j = 0
-                    for image_url in images_list:
-                        progress = str(j * 100 / len(images_list)) + '%'
+                    for idx, image_url in enumerate(images_list):
+                        progress = str(idx * 100 / len(images_list)) + '%'
                         print '\r      > Downloading images (' + progress + ')',
                         sys.stdout.flush()
-                        filename = image_url.split("/")[-1].replace(".small", "")
-                        response = urllib2.urlopen(image_url)
 
-                        f = open(os.path.join(images_dir, filename), "wb+")
-                        f.write(response.read())
-                        f.close()
+                        err, image = URLUtils.get(image_url)
+                        if not err:
+                            filename = image_url.split("/")[-1].replace(".small", "")
+                            f = open(os.path.join(images_dir, filename), "wb+")
+                            f.write(image)
+                            f.close()
 
-                        j += 1
                     print '\r      > Downloading images (100%). Done.'
 
             except AttributeError:
                 return
+
+    def get_glossary(self, url):
+        pass

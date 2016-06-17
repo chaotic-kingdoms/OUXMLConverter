@@ -95,7 +95,7 @@ class CourseExporter:
             progress = str(sectionid * 100 / num_sections) + '%'
             print '\r  > Generating sections (' + progress + ')',
             sys.stdout.flush()
-            #Information of sections for "moodle_backup.xml" file
+            # Information of sections for "moodle_backup.xml" file
             self.section_values.append({
                 'sectionid': sectionid,
                 'section_directory': 'sections/section_' + str(sectionid)})
@@ -162,9 +162,9 @@ class CourseExporter:
 
                 # Create "inforef.xml" file
                 files = []
-                for file in self.files_values:
-                    if file.get('contextid', -1) == sessionid:
-                        files.append(file)
+                for f in self.files_values:
+                    if f.get('contextid', -1) == sessionid:
+                        files.append(f)
 
                 inforef_file = open(page_dir + '/inforef.xml', "wb+")
                 inforef_file.write(renderer.render_path(self.get_template('inforef'),
