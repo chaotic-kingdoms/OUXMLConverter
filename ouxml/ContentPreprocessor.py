@@ -31,7 +31,7 @@ class ContentPreprocessor:
             section.title = self.content_to_html(section.title)
             section.title = html.fromstring(section.title).text_content()  # clean up tags
             section.remove_title_numbering()
-            
+
             progress = str(i * 100 / len(self.course.sections)) + '%'
             print '\r  > Applying XSLT to the course (' + progress + ')',
             sys.stdout.flush()
