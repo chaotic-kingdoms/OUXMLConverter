@@ -7,8 +7,6 @@ from distutils.file_util import copy_file
 
 from lxml import html
 
-from utils.CourseUtils import CourseUtils
-
 import os
 import pystache
 import re
@@ -58,7 +56,7 @@ class CourseExporter:
 
         os.makedirs(files_dir)
 
-        images_dir = os.path.join(self.output_path, settings.TEMP, 'images')
+        images_dir = os.path.join(self.output_path, settings.TEMP_FOLDER, 'images')
         image_files = os.listdir(images_dir)
 
         for i, image_file in enumerate(image_files, start=1):

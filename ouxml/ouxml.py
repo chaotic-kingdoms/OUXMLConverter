@@ -23,7 +23,7 @@ def main(argv):
         course = parser.retrieve_course()
 
         course_name = CourseUtils.get_course_name(course.title_full)
-        course_dir = os.path.join(output_path, settings.TEMP, course_name)
+        course_dir = os.path.join(output_path, settings.TEMP_FOLDER, course_name)
 
         exporter = CourseExporter(course, output_path, course_dir)
         exporter.generate_backup()

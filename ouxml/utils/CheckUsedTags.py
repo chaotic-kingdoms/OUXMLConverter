@@ -7,14 +7,14 @@ class CheckUsedTags:
     used_tags = {}
 
     def __init__(self, path):
-        file = open(path, "r")
-        for line in file:
+        f = open(path, "r")
+        for line in f:
             if "glossary" not in line:
                 extra = "&content=scxml"
                 if extra not in line:
                     line = line.rstrip() + extra
                 self.getusedtags(urllib2.urlopen(line).read())
-        file.close()
+        f.close()
         print "Total tags:" + str(len(self.used_tags))
         print self.used_tags
 
