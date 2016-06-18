@@ -5,8 +5,6 @@ from PIL import ImageDraw
 import settings
 from PIL import ImageFont
 
-OPTIMIZATION_WIDTH = 300
-
 class ImageUtils(object):
 
     @staticmethod
@@ -22,8 +20,8 @@ class ImageUtils(object):
         image = Image.open(source_path)
 
 
-        width_percent = (OPTIMIZATION_WIDTH / float(image.size[0]))
-        new_width = OPTIMIZATION_WIDTH
+        width_percent = (settings.IMG_OPTIMIZED_WIDTH / float(image.size[0]))
+        new_width = settings.IMG_OPTIMIZED_WIDTH
         new_height = int((float(image.size[1]) * float(width_percent)))
 
         image.thumbnail((new_width, new_height), Image.ANTIALIAS)
@@ -37,12 +35,20 @@ class ImageUtils(object):
         return initial_size - final_size
 
     @staticmethod
-    def generate_glossary_thumbnail(chars_title, dest_path):
-        image = Image.new('RGBA', settings.GLOSSARY_THUMB_SIZE, color=settings.GLOSSARY_BACKGROUND)
+    def generate_glossary_thumbnail(chars_title, dest_path, drop_shadow=True):
+
+        text_pos = settings.GLOSSARY_TEXT_MARGIN
+        x_pad = settings.GLOSSARY_TEXT_HORIZONTAL_PAD
+        bgcolor = settings.GLOSSARY_BACKGROUND
+
+        font = ImageFont.truetype(settings.GLOSSARY_THUMB_FONT, size=settings.GLOSSARY_TEXT_FONTSIZE)
+        image = Image.new('RGBA', settings.GLOSSARY_THUMB_SIZE, color=bgcolor)
         draw = ImageDraw.Draw(image)
 
-        font = ImageFont.truetype(settings.GLOSSARY_THUMB_FONT, size=120)
-        draw.text((20,20), chars_title, fill=settings.GLOSSARY_FOREGROUND, font=font)
+        if drop_shadow:
+            shadow_color = bgcolor[0] - 20, bgcolor[1] - 20, bgcolor[2] - 20
+            for pos in range(text_pos, image.height):
+                draw.text((pos+x_pad,pos), chars_title, fill=shadow_color, font=font)
 
+        draw.text((text_pos+x_pad,text_pos), chars_title, fill=settings.GLOSSARY_FOREGROUND, font=font)
         image.save(dest_path, optimize=True, quality=90)
-
