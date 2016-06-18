@@ -29,7 +29,8 @@ class ContentPreprocessor:
         for i, section in enumerate(self.course.sections):
 
             section.title = self.content_to_html(section.title)
-            section.title = html.fromstring(section.title).text_content()  # clean up tags
+            section.title = ET.fromstring(section.title).text
+            #section.title = html.fromstring(section.title).text_content()  # clean up tags
             section.remove_title_numbering()
 
             progress = str(i * 100 / len(self.course.sections)) + '%'
@@ -49,7 +50,7 @@ class ContentPreprocessor:
         xslt = ET.parse(self.xsl_file)
         transform = ET.XSLT(xslt)
         newdom = transform(dom)
-        return re.sub('(&#160;)+', ' ', ET.tostring(newdom, encoding='utf8', pretty_print=True))
+        return re.sub('(&#160;)+', ' ', ET.tostring(newdom, pretty_print=True))
 
     def optimize_images(self):
         images_dir = os.path.join(settings.OUTPUT_PATH, 'temp', 'images')

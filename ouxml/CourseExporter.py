@@ -6,6 +6,7 @@ from distutils.dir_util import remove_tree
 from distutils.file_util import copy_file
 import codecs
 from lxml import html
+from lxml import etree
 
 import os
 import pystache
@@ -93,7 +94,6 @@ class CourseExporter:
 
         sections_dir = os.path.join(self.course_dir, "sections")
         num_sections = len(self.course.sections)
-        print num_sections
 
         # Create section.xml files within the "sections" directory
 
@@ -139,9 +139,8 @@ class CourseExporter:
             sys.stdout.flush()
 
             for session in section.sessions:
-
-                session.title = html.fromstring(session.title).text_content()
-                print session.title
+                session.title = etree.fromstring(session.title).text
+                #session.title = html.fromstring(session.title).text_content()
                 session.remove_title_numbering()
 
                 self.session_values.append({'sessionid': sessionid,

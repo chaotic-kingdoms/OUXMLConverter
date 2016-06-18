@@ -65,6 +65,7 @@ class Glossary:
             if key.isdigit():
                 if 'Special' in grouped_items:
                     grouped_items['Special'].extend(self.glossary_items[key])
+
                 else:
                     grouped_items['Special'] = self.glossary_items[key]
 
@@ -73,6 +74,10 @@ class Glossary:
                     actual_count = len(grouped_items[index])
                     new_count = actual_count + len(self.glossary_items[key])
                     if new_count > 20:
+                        print index[2]
+                        print index[0]
+                        if index[0] == index[2]:
+                            grouped_items[index[0]] = grouped_items.pop(index)
                         index = key + '-' + key
                         grouped_items[index] = self.glossary_items[key]
                     else:
