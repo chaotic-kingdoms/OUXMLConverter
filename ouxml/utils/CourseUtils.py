@@ -1,6 +1,7 @@
 import tarfile
 import zipfile
 from datetime import datetime as DT
+import time
 
 import os
 from os import listdir
@@ -9,6 +10,7 @@ from os import listdir
 class CourseUtils(object):
 
     course_name = ""
+    start_time = 0
 
     @staticmethod
     def compress_course(src, type='mbz'):
@@ -42,4 +44,10 @@ class CourseUtils(object):
         else:
             return course_title + '-' + str(DT.today().strftime('%Y%m%d%H%M'))
 
+    @staticmethod
+    def set_start_time():
+        CourseUtils.start_time = DT.today()
 
+    @staticmethod
+    def get_program_duration():
+        return DT.today() - CourseUtils.start_time

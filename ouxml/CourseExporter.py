@@ -4,7 +4,7 @@ import time
 from distutils.dir_util import copy_tree
 from distutils.dir_util import remove_tree
 from distutils.file_util import copy_file
-
+import codecs
 from lxml import html
 
 import os
@@ -93,6 +93,7 @@ class CourseExporter:
 
         sections_dir = os.path.join(self.course_dir, "sections")
         num_sections = len(self.course.sections)
+        print num_sections
 
         # Create section.xml files within the "sections" directory
 
@@ -109,7 +110,7 @@ class CourseExporter:
             if not os.path.exists(section_dir):
                 os.makedirs(section_dir)
 
-            section_file = open(section_dir + "/section.xml", "wb+")
+            section_file = codecs.open(section_dir + "/section.xml",  encoding='utf-8', mode="wb+")
             section_file.write(renderer.render_path(self.get_template('section'),
                                                 {'id': sectionid, 'number': sectionid, 'name': section.title}))
             section_file.close()
@@ -117,7 +118,7 @@ class CourseExporter:
         print '\r  > Generating sections (100%). Done.'
 
         # Add sections count to file course.xml within "course" directory
-        course_info_file = open(os.path.join(self.course_dir, "course", "course.xml"), "wb+")
+        course_info_file = codecs.open(os.path.join(self.course_dir, "course", "course.xml"), encoding='utf-8', mode="wb+")
         course_info_file.write(renderer.render_path(self.get_template('course_info'), {
                                     'sections_count': num_sections,
                                     'course_title_full': self.course.title_full,
@@ -140,6 +141,7 @@ class CourseExporter:
             for session in section.sessions:
 
                 session.title = html.fromstring(session.title).text_content()
+                print session.title
                 session.remove_title_numbering()
 
                 self.session_values.append({'sessionid': sessionid,
@@ -153,7 +155,7 @@ class CourseExporter:
                 self.generate_session_base_files(sessionid)
 
                 # Create "module.xml" file
-                module_file = open(page_dir + "/module.xml", "wb+")
+                module_file = codecs.open(page_dir + "/module.xml", encoding='utf-8', mode="wb+")
                 module_file.write(renderer.render_path(self.get_template('activity_module'),
                                        {'id': sessionid, 'sectionid': sectionid }))
                 module_file.close()
@@ -167,11 +169,11 @@ class CourseExporter:
                     item['contextid'] = sessionid
                     # self.files_values.append({'filename': filename, 'contextid':contextid})
 
-                page_file = open(page_dir + "/page.xml", "wb+")
+                page_file = codecs.open(page_dir + "/page.xml", encoding='utf-8', mode="wb+")
                 page_file.write(renderer.render_path(self.get_template('activity_page'),
                                      {'id': sessionid,
                                       'title': session.title,
-                                      'content': new_content}))
+                                      'content': new_content.decode('utf-8')}))
                 page_file.close()
 
                 # Create "inforef.xml" file
@@ -180,7 +182,7 @@ class CourseExporter:
                     if f.get('contextid', -1) == sessionid:
                         files.append(f)
 
-                inforef_file = open(page_dir + '/inforef.xml', "wb+")
+                inforef_file = codecs.open(page_dir + '/inforef.xml', encoding='utf-8', mode="wb+")
                 inforef_file.write(renderer.render_path(self.get_template('inforef'),
                                         { 'files': files, 'fileid': sessionid }))
                 inforef_file.close()
@@ -193,7 +195,7 @@ class CourseExporter:
         print('  > Creating moodle_backup.xml... '),
         sys.stdout.flush()
 
-        moodle_backup_file = open(os.path.join(self.course_dir, "moodle_backup.xml"), "wb+")
+        moodle_backup_file = codecs.open(os.path.join(self.course_dir, "moodle_backup.xml"), encoding='utf-8', mode="wb+")
         moodle_backup_file.write(renderer.render_path(self.get_template('moodle_backup'), {
                                             'sessions': self.session_values,
                                             'sections': self.section_values,
@@ -210,7 +212,7 @@ class CourseExporter:
         """ Generate the file files.xml"""
         print '  > Creating files.xml... ',
 
-        files_file = open(os.path.join(self.course_dir, "files.xml"), "wb+")
+        files_file = codecs.open(os.path.join(self.course_dir, "files.xml"), encoding='utf-8', mode="wb+")
         files_file.write(renderer.render_path(self.get_template('files'),
                                               {'files': self.files_values}))
         print 'Done.'

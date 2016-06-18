@@ -58,11 +58,11 @@ class CourseParser:
         element = ElementTree.fromstring(content)
 
         if not self.course.title_full:
-            self.course.title_full = ElementTree.tostring(element.find('CourseTitle'), 'utf8', 'text')
+            self.course.title_full = ElementTree.tostring(element.find('CourseTitle'), encoding='utf8', method='text')
         if not self.course.title_short:
-            self.course.title_short = ElementTree.tostring(element.find('CourseCode'), 'utf8', 'text')
+            self.course.title_short = ElementTree.tostring(element.find('CourseCode'), encoding='utf8', method='text')
 
-        section_title = ElementTree.tostring(element.find('ItemTitle'), 'utf-8', 'xml')
+        section_title = ElementTree.tostring(element.find('ItemTitle'), encoding='utf8', method='xml')
         #section_title = re.sub('^([0-9]+\.?)+\s*', '', section_title)
 
         sessions = []
@@ -71,10 +71,10 @@ class CourseParser:
         for i, session in enumerate(element.iter('Session'), start=1):
             progress = str(i * 100 / session_count) + '%'
             print '\r  > Parsing Sessions (' + str(i) + '/' + str(session_count) + ' - ' + progress + ').',
-            session_title = ElementTree.tostring(session.find('Title'), 'utf-8', 'xml')
+            session_title = ElementTree.tostring(session.find('Title'), encoding='utf8', method='xml')
             #session_title = re.sub('^([0-9]+\.?)+\s*', '', session_title)
             session.remove(session.find('Title'))
-            content = ElementTree.tostring(session, 'utf8', 'xml')
+            content = ElementTree.tostring(session, encoding='utf8', method='xml')
             sessions.append(Session(session_title, content))
 
         self.course.sections.append(Section(section_title, sessions))

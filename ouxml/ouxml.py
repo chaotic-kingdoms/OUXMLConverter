@@ -15,6 +15,8 @@ def main(argv):
         print 'Wrong number of arguments.'
         print 'Usage:'  # TODO
     else:
+        CourseUtils.set_start_time()
+
         input_path = sys.argv[1]
         output_path = sys.argv[2]
         settings.OUTPUT_PATH = output_path
@@ -33,7 +35,10 @@ def main(argv):
         copy_file(backup_path, output_path)
         remove_tree(os.path.join(output_path, 'temp'))
         print ('\nCourse created successfully at path: ' + output_path)
-
+        duration = CourseUtils.get_program_duration()
+        minutes = (duration.seconds % 3600) // 60
+        seconds = duration.seconds % 60
+        print ('Duration: ' + str(minutes) + 'm ' + str(seconds) + 's.')
 
 if __name__ == "__main__":
     main(sys.argv)

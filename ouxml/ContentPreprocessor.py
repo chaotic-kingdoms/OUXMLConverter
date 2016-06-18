@@ -45,12 +45,11 @@ class ContentPreprocessor:
     def content_to_html(self, content):
         """Apply XSLT to the content of the course and returns the converted HTML text"""
 
-        dom = ET.XML(content, ET.XMLParser(target=ET.TreeBuilder()))
+        dom = ET.XML(content, ET.XMLParser())
         xslt = ET.parse(self.xsl_file)
         transform = ET.XSLT(xslt)
         newdom = transform(dom)
-
-        return re.sub('(&#160;)+', ' ', ET.tostring(newdom, pretty_print=True))
+        return re.sub('(&#160;)+', ' ', ET.tostring(newdom, encoding='utf8', pretty_print=True))
 
     def optimize_images(self):
         images_dir = os.path.join(settings.OUTPUT_PATH, 'temp', 'images')
