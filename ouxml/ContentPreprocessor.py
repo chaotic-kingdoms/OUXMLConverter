@@ -4,9 +4,8 @@ import sys
 import lxml.etree as ET
 from lxml import html
 import os
-from PIL import Image
 from os import listdir
-
+from utils.ImageUtils import ImageUtils
 import settings
 
 
@@ -54,25 +53,16 @@ class ContentPreprocessor:
 
     def optimize_images(self):
         images_dir = os.path.join(settings.OUTPUT_PATH, 'temp', 'images')
+        images = listdir(images_dir)
         size_saved = 0
-        i = 1
-        for image_file in listdir(images_dir):
+
+        for i, image_file in enumerate(images):
             image_path = os.path.join(images_dir, image_file)
-            initial_size = os.stat(image_path).st_size
-            progress = str(i * 100 / len(listdir(images_dir))) + '%'
+
+            progress = str(i * 100 / len(images)) + '%'
             print '\r  > Optimizing images (' + progress + ')',
             sys.stdout.flush()
-            image = Image.open(image_path)
-            new_width = 300
-            width_percent = (new_width / float(image.size[0]))
-            new_height = int((float(image.size[1]) * float(width_percent)))
-            image.thumbnail((new_width, new_height), Image.ANTIALIAS)
-            extension = image_file.split(".")[-1]
-            if extension == 'jpg':
-                image.save(image_path, optimize=True, quality=90)
-            else:
-                image.save(image_path)
-            final_size = os.stat(image_path).st_size
-            size_saved += initial_size - final_size
-            i += 1
+
+            size_saved += ImageUtils.save_optimized_image(image_path)
+
         print '\r  > Optimizing images (100%). Done. ' + str(size_saved/1024) + 'KB saved.'
