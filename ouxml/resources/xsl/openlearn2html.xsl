@@ -63,8 +63,14 @@
     <xsl:template match="ITQ">
         <div class="box question">
             <p><xsl:value-of select="Question"/></p>
-            <div name="reveal" id="1" class="reveal">Show answer</div>
-            <div id="answer1">
+            <div>
+                <xsl:attribute name="name">reveal</xsl:attribute>
+                <xsl:attribute name="id"><xsl:value-of select="position()"/></xsl:attribute>
+                <xsl:attribute name="class">reveal</xsl:attribute>
+                Show answer
+            </div>
+            <div>
+                <xsl:attribute name="id"><xsl:value-of select="concat('answer', position())"/></xsl:attribute>
                 <p><xsl:value-of select="Answer"/></p>
             </div>
         </div>
