@@ -36,4 +36,13 @@ class ImageUtils(object):
         final_size = os.stat(dest_path).st_size
         return initial_size - final_size
 
+    @staticmethod
+    def generate_glossary_thumbnail(chars_title, dest_path):
+        image = Image.new('RGBA', settings.GLOSSARY_THUMB_SIZE, color=settings.GLOSSARY_BACKGROUND)
+        draw = ImageDraw.Draw(image)
+
+        font = ImageFont.truetype(settings.GLOSSARY_THUMB_FONT, size=120)
+        draw.text((20,20), chars_title, fill=settings.GLOSSARY_FOREGROUND, font=font)
+
+        image.save(dest_path, optimize=True, quality=90)
 
