@@ -142,6 +142,7 @@ class CourseExporter:
                 session.title = etree.fromstring(session.title).text
                 #session.title = html.fromstring(session.title).text_content()
                 session.remove_title_numbering()
+                session.remove_subsection_numbering()
 
                 self.session_values.append({'sessionid': sessionid,
                                             'sectionid': sectionid,
@@ -161,7 +162,7 @@ class CourseExporter:
 
                 # Create "page.xml" file
                 regex = re.compile(r'(?:<img src=\")(?:[^"]+)[\\|/]([^"]+)\"')
-                new_content = regex.sub(r'<img src="@@PLUGINFILE@@/\g<1>"', session.content)
+                session.content = regex.sub(r'<img src="@@PLUGINFILE@@/\g<1>"', session.content)  #Replace image information
                 for image in regex.finditer(session.description + session.content):
                     filename = image.group(1)
                     item = (item for item in self.files_values if item['filename'] == filename).next()
@@ -179,7 +180,7 @@ class CourseExporter:
                                      {'id': sessionid,
                                       'title': session.title,
                                       'description': session.description,
-                                      'content': new_content.decode('utf-8')}))
+                                      'content': session.content}))
                 page_file.close()
 
                 # Create "inforef.xml" file

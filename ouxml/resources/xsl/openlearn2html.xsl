@@ -107,4 +107,9 @@
         <h3><xsl:apply-templates/></h3>
     </xsl:template>
 
+    <xsl:template match="Session/Section/Title">
+        <h3 class="subsection"><xsl:apply-templates/></h3>
+    </xsl:template>
+
+
 </xsl:stylesheet>
