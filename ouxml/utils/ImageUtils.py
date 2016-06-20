@@ -39,6 +39,8 @@ class ImageUtils(object):
 
         text_pos = settings.GLOSSARY_TEXT_MARGIN
         x_pad = settings.GLOSSARY_TEXT_HORIZONTAL_PAD
+        if len(chars_title) == 1:
+            x_pad *= 4
         bgcolor = settings.GLOSSARY_BACKGROUND
 
         font = ImageFont.truetype(settings.GLOSSARY_THUMB_FONT, size=settings.GLOSSARY_TEXT_FONTSIZE)

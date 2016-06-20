@@ -64,19 +64,23 @@ class Glossary:
 
     def group(self):
         grouped_items = {}
-        index = 'A-A'
+        index = ''
         for i, key in enumerate(sorted(self.glossary_items)):
             progress = str(i * 100 / len(self.glossary_items.keys())) + '%'
             print '\r  > Grouping glossary items (' + progress + ').',
             sys.stdout.flush()
+
             if key.isdigit():
-                if 'Special' in grouped_items:
-                    grouped_items['Special'].extend(self.glossary_items[key])
+                if '0-9' in grouped_items:
+                    grouped_items['0-9'].extend(self.glossary_items[key])
 
                 else:
-                    grouped_items['Special'] = self.glossary_items[key]
+                    grouped_items['0-9'] = self.glossary_items[key]
 
             else:
+                if not index:
+                    index = key + '-' + key
+
                 if index in grouped_items:
                     actual_count = len(grouped_items[index])
                     new_count = actual_count + len(self.glossary_items[key])
