@@ -138,6 +138,7 @@ class CourseParser:
 
     def get_glossary(self, url):
         glossary_url = URLUtils.replace_qs_param(url, {'page':'-1'})
+        print '  > Getting glossary contents... ',
         err, page = URLUtils.get(glossary_url)
         if not err:
             glossary_items = dict()
@@ -155,15 +156,19 @@ class CourseParser:
                     glossary_items[key].append(glossary_item)
                 else:
                     glossary_items[key] = [glossary_item]
+            print 'Done.'
         glossary = Glossary(glossary_items)
         glossary.group()
-        self.download_glossary_thumbnail(glossary.glossary_items)
         self.course.sections.append(glossary.to_section())
+        self.download_glossary_thumbnail(glossary.glossary_items)
 
     def download_glossary_thumbnail(self, glossary_items):
         images_dir = os.path.join(self.output_path, 'temp', 'images')
-        for title in glossary_items.keys():
+        for i, title in enumerate(glossary_items.keys()):
+            progress = str(i * 100 / len(glossary_items.keys())) + '%'
+            print '\r  > Generating glossary thumbnails (' + progress + ').',
+            sys.stdout.flush()
             dest_path = os.path.join(images_dir, title + '.jpg')
             ImageUtils.generate_glossary_thumbnail(title, dest_path)
-
+        print '\r  > Generating glossary thumbnails (100%). Done.'
 

@@ -2,6 +2,7 @@ import re
 from collections import OrderedDict
 import pystache
 import os
+import sys
 import settings
 
 class Course:
@@ -62,7 +63,10 @@ class Glossary:
     def group(self):
         grouped_items = {}
         index = 'A-A'
-        for key in sorted(self.glossary_items.keys()):
+        for i, key in enumerate(sorted(self.glossary_items)):
+            progress = str(i * 100 / len(self.glossary_items.keys())) + '%'
+            print '\r  > Grouping glossary items (' + progress + ').',
+            sys.stdout.flush()
             if key.isdigit():
                 if 'Special' in grouped_items:
                     grouped_items['Special'].extend(self.glossary_items[key])
@@ -88,14 +92,18 @@ class Glossary:
                 else:
                     grouped_items[index] = self.glossary_items[key]
 
+        print '\r  > Grouping glossary items (100%). Done.'
         self.glossary_items = OrderedDict(sorted(grouped_items.items()))
 
     def to_section(self):
         renderer = pystache.Renderer()
         sessions = []
 
-        for key, value in self.glossary_items.iteritems():
-
+        for i, key in enumerate(self.glossary_items):
+            value = self.glossary_items[key]
+            progress = str(i * 100 / len(self.glossary_items.keys())) + '%'
+            print '\r  > Creating glossary sessions (' + progress + ').',
+            sys.stdout.flush()
             items = []
             for item in value:
                 items.append({'concept': item.concept, 'definition': item.definition})
@@ -105,6 +113,8 @@ class Glossary:
             thumbnail_title = key + '.jpg'
             session_description = renderer.render_path(os.path.join(settings.TEMPLATES_ROOT, 'description.mustache'), {'thumbnail': thumbnail_title})
             sessions.append(Session(session_title, content, session_description))
+
+        print '\r  > Creating glossary sessions (100%). Done.'
 
         section_title = renderer.render_path(os.path.join(settings.TEMPLATES_ROOT, 'title.mustache'), {'value': 'Glossary'})
         return Section(section_title, sessions)
