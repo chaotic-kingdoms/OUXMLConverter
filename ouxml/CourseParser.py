@@ -9,6 +9,7 @@ import ContentPreprocessor
 import settings
 from model import Course, Section, Session, Glossary, GlossaryItem
 from utils.URLUtils import URLUtils
+from utils.ImageUtils import ImageUtils
 
 
 class CourseParser:
@@ -156,6 +157,14 @@ class CourseParser:
                     glossary_items[key] = [glossary_item]
         glossary = Glossary(glossary_items)
         glossary.group()
+        self.download_glossary_thumbnail(glossary.glossary_items)
         self.course.sections.append(glossary.to_section())
+
+    def download_glossary_thumbnail(self, glossary_items):
+        images_dir = os.path.join(self.output_path, 'temp', 'images')
+        for title in glossary_items.keys():
+            print title
+            dest_path = os.path.join(images_dir, title + '.jpg')
+            ImageUtils.generate_glossary_thumbnail(title, dest_path)
 
 
