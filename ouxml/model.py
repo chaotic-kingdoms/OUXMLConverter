@@ -45,9 +45,10 @@ class Session:
     title = ""
     content = ""
 
-    def __init__(self, title, content):
+    def __init__(self, title, content, description=''):
         self.title = title
         self.content = content
+        self.description = description
 
     def remove_title_numbering(self):
         self.title = re.sub('^([0-9]+\.?)+\s*', '', self.title)
@@ -74,10 +75,9 @@ class Glossary:
                     actual_count = len(grouped_items[index])
                     new_count = actual_count + len(self.glossary_items[key])
                     if new_count > 20:
-                        print index[2]
-                        print index[0]
                         if index[0] == index[2]:
                             grouped_items[index[0]] = grouped_items.pop(index)
+
                         index = key + '-' + key
                         grouped_items[index] = self.glossary_items[key]
                     else:
@@ -102,7 +102,9 @@ class Glossary:
 
             content = renderer.render_path(os.path.join(settings.TEMPLATES_ROOT, 'glossary.mustache'), {'items': items})
             session_title = renderer.render_path(os.path.join(settings.TEMPLATES_ROOT, 'title.mustache'), {'value': key})
-            sessions.append(Session(session_title, content))
+            thumbnail_title = key + '.jpg'
+            session_description = renderer.render_path(os.path.join(settings.TEMPLATES_ROOT, 'description.mustache'), {'thumbnail': thumbnail_title})
+            sessions.append(Session(session_title, content, session_description))
 
         section_title = renderer.render_path(os.path.join(settings.TEMPLATES_ROOT, 'title.mustache'), {'value': 'Glossary'})
         return Section(section_title, sessions)

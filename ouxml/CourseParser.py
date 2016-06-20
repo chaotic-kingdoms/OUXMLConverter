@@ -163,7 +163,6 @@ class CourseParser:
     def download_glossary_thumbnail(self, glossary_items):
         images_dir = os.path.join(self.output_path, 'temp', 'images')
         for title in glossary_items.keys():
-            print title
             dest_path = os.path.join(images_dir, title + '.jpg')
             ImageUtils.generate_glossary_thumbnail(title, dest_path)
 
