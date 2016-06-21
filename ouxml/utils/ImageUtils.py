@@ -26,10 +26,14 @@ class ImageUtils(object):
 
         image.thumbnail((new_width, new_height), Image.ANTIALIAS)
         extension = source_path.split(".")[-1]
-        if extension == 'jpg':
-            image.save(dest_path, optimize=True, quality=90)
-        else:
-            image.save(dest_path)
+        try:
+            if extension == 'jpg':
+                image.save(dest_path, optimize=True, quality=90)
+            else:
+                image.save(dest_path)
+        except IOError as e:
+            print "Error optimizing image"
+            print e
 
         final_size = os.stat(dest_path).st_size
         return initial_size - final_size
