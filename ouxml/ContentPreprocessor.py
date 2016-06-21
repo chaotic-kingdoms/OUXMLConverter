@@ -2,7 +2,6 @@ import re
 import sys
 
 import lxml.etree as ET
-from lxml import html
 import os
 from os import listdir
 from utils.ImageUtils import ImageUtils

@@ -74,7 +74,7 @@ class CourseParser:
         references_count = len(element.findall('.//Reference'))
 
         if references_count > 0 and (not self.includerefs):
-            print 'Not include refs'
+            print '  > References section. Excluding it...'
             return
 
         for i, session in enumerate(element.iter('Session'), start=1):
@@ -165,7 +165,7 @@ class CourseParser:
                     glossary_items[key] = [glossary_item]
             print 'Done.'
         glossary = Glossary(glossary_items)
-        glossary.group()
+        glossary.group(settings.GLOSSARY_GROUP_SIZE)
         self.course.sections.append(glossary.to_section())
         self.download_glossary_thumbnail(glossary.glossary_items)
 
