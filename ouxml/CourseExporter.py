@@ -167,15 +167,19 @@ class CourseExporter:
                 session.content = regex.sub(r'<img src="@@PLUGINFILE@@/\g<1>"', session.content)  #Replace image information
                 for image in regex.finditer(session.description + session.content):
                     filename = image.group(1)
-                    item = (item for item in self.files_values if item['filename'] == filename).next()
-                    item['contextid'] = sessionid
+
+                    for item in self.files_values:
+                        if item['filename'] == filename:
+                            file_item = item
+                            
+                    file_item['contextid'] = sessionid
 
                     if image.group(0) in session.description:
                         filearea = 'intro'  #If the image appears in the description
                     else:
                         filearea = 'content'    #If the image appears in the content
 
-                    item['filearea'] = filearea
+                    file_item['filearea'] = filearea
 
                 page_file = codecs.open(page_dir + "/page.xml", encoding='utf-8', mode="wb+")
                 page_file.write(renderer.render_path(self.get_template('activity_page'),
