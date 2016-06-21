@@ -61,7 +61,7 @@ class Glossary:
     def __init__(self, glossary_items={}):
         self.glossary_items = glossary_items or {}
 
-    def group(self):
+    def group(self, group_size=20):
         grouped_items = {}
         index = ''
         for i, key in enumerate(sorted(self.glossary_items)):
@@ -83,7 +83,7 @@ class Glossary:
                 if index in grouped_items:
                     actual_count = len(grouped_items[index])
                     new_count = actual_count + len(self.glossary_items[key])
-                    if new_count > 20:
+                    if new_count > group_size:
                         if index[0] == index[2]:
                             grouped_items[index[0]] = grouped_items.pop(index)
 

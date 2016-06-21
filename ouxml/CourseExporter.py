@@ -5,7 +5,6 @@ from distutils.dir_util import copy_tree
 from distutils.dir_util import remove_tree
 from distutils.file_util import copy_file
 import codecs
-from lxml import html
 from lxml import etree
 
 import os
