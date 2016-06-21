@@ -11,9 +11,10 @@ import settings
 
 class ContentPreprocessor:
 
-    def __init__(self, xsl_file, course):
+    def __init__(self, xsl_file, course, keepnums):
         self.xsl_file = xsl_file
         self.course = course
+        self.keepnums = keepnums    # Keep numbering on section titles
 
     def preprocess_course(self):
         """ Perform the course pre-processing. This include converting the course contents to HTML and optimize the
@@ -30,7 +31,8 @@ class ContentPreprocessor:
             section.title = self.content_to_html(section.title)
             section.title = "".join(ET.fromstring(section.title).itertext())
             #section.title = html.fromstring(section.title).text_content()  # clean up tags
-            section.remove_title_numbering()
+            if not self.keepnums:
+                section.remove_title_numbering()
 
             progress = str(i * 100 / len(self.course.sections)) + '%'
             print '\r  > Applying XSLT to the course (' + progress + ')',

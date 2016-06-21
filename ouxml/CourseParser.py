@@ -14,9 +14,11 @@ from utils.ImageUtils import ImageUtils
 
 class CourseParser:
 
-    def __init__(self, input_path, output_path):
+    def __init__(self, input_path, output_path, includerefs, keepnums):
         self.input_path = input_path
         self.output_path = output_path
+        self.includerefs = includerefs  # Include references section
+        self.keepnums = keepnums        # Keep numbering on section titles
 
         self.course = Course()
 
@@ -39,7 +41,7 @@ class CourseParser:
 
         sections_list.close()
 
-        cp = ContentPreprocessor.ContentPreprocessor(settings.XSL_FILE, self.course)
+        cp = ContentPreprocessor.ContentPreprocessor(settings.XSL_FILE, self.course, self.keepnums)
         cp.preprocess_course()
 
         return self.course
@@ -69,6 +71,13 @@ class CourseParser:
 
         sessions = []
         session_count = len(element.findall('.//Session'))
+        references_count = len(element.findall('.//Reference'))
+
+        print references_count
+        print not self.includerefs
+        if references_count > 0 and (not self.includerefs):
+            print 'Not include refs'
+            return
 
         for i, session in enumerate(element.iter('Session'), start=1):
             progress = str(i * 100 / session_count) + '%'

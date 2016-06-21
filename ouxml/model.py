@@ -12,7 +12,6 @@ class Course:
         self.title_short = title_short or ""
         self.sections = sections or []
         self.glossary = glossary or {}
-        print ('Course object created successfully!\n')
 
     def coursetofile(self, filename):
         """Write the complete course to a file"""

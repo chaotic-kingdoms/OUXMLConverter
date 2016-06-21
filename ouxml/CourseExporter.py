@@ -19,10 +19,11 @@ renderer = pystache.Renderer()
 
 class CourseExporter:
 
-    def __init__(self, course, output_path, course_dir):
+    def __init__(self, course, output_path, course_dir, keepnums):
         self.course = course
         self.output_path = output_path
         self.course_dir = course_dir
+        self.keepnums = keepnums  # Keep numbering on section titles
         self.section_values = []
         self.session_values = []
         self.files_values = []
@@ -141,8 +142,9 @@ class CourseExporter:
             for session in section.sessions:
                 session.title = "".join(etree.fromstring(session.title).itertext())
                 #session.title = html.fromstring(session.title).text_content()
-                session.remove_title_numbering()
-                session.remove_subsection_numbering()
+                if not self.keepnums:
+                    session.remove_title_numbering()
+                    session.remove_subsection_numbering()
 
                 self.session_values.append({'sessionid': sessionid,
                                             'sectionid': sectionid,
