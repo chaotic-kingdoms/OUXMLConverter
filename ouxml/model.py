@@ -37,7 +37,7 @@ class Section:
         self.sessions = sessions
 
     def remove_title_numbering(self):
-        self.title = re.sub('^([0-9]+\.?)+\s*', '', self.title)
+        self.title = re.sub('^([0-9]+\.?[^-]\s*)+', '', self.title)
         self.title = re.sub('^Study Session [0-9]+\s*', '', self.title)
 
 
@@ -52,10 +52,10 @@ class Session:
         self.description = description
 
     def remove_title_numbering(self):
-        self.title = re.sub('^([0-9]+\.?)+\s*', '', self.title)
+        self.title = re.sub('^([0-9]+\.?[^-]\s*)+', '', self.title)
 
     def remove_subsection_numbering(self):
-        self.content = re.sub(r'(<h3 class="subsection">)(?:[0-9]+\.?)+\s*', r'\g<1>', self.content)
+        self.content = re.sub(r'(<h3 class="subsection">)(?:[0-9]+\.?[^-]\s*)+', r'\g<1>', self.content)
 
 class Glossary:
 

@@ -28,7 +28,7 @@ class ContentPreprocessor:
         for i, section in enumerate(self.course.sections):
 
             section.title = self.content_to_html(section.title)
-            section.title = ET.fromstring(section.title).text
+            section.title = "".join(ET.fromstring(section.title).itertext())
             #section.title = html.fromstring(section.title).text_content()  # clean up tags
             section.remove_title_numbering()
 

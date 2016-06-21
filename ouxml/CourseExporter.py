@@ -139,7 +139,7 @@ class CourseExporter:
             sys.stdout.flush()
 
             for session in section.sessions:
-                session.title = etree.fromstring(session.title).text
+                session.title = "".join(etree.fromstring(session.title).itertext())
                 #session.title = html.fromstring(session.title).text_content()
                 session.remove_title_numbering()
                 session.remove_subsection_numbering()
