@@ -1,5 +1,6 @@
 import os
 
+PROJECT_VERSION = '0.0.1'
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 RESOURCES_PATH = os.path.join(PROJECT_ROOT, 'resources')
 TEMPLATES_ROOT = os.path.join(RESOURCES_PATH, 'templates')

@@ -12,11 +12,12 @@ from utils.CourseUtils import CourseUtils
 
 
 def main(argv):
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(version=settings.PROJECT_VERSION)
     parser.add_argument('input_file',type=str,
                         help='.txt file containing the URLs to the Open University course sections.')
 
     default_output = os.path.abspath(os.path.dirname(argv[1])) if len(argv) > 1 else ""
+
     parser.add_argument('-o', '--output_path', type=str,
                         help='Directory where the course will be stored.', default=default_output)
     parser.add_argument('--includerefs', help='If set, the references section is added to the course. Otherwise, they are ignored.', action="store_true")
