@@ -18,7 +18,22 @@ pip install -r requirements.txt
 Otherwise, you can use the `setup.py` script included.
 
 ## Usage
-- to-do
+```
+ouxml.py [optional arguments] input_file
+```
+
+Arguments:
+* `input_file`: **mandatory**. Path to a plain text file containing the URLs to the Open University course sections. The URLs don't need to contain the content format parameter (e.g. `?content=scxml`)
+
+* `-h`, `--help`: show the usage help message
+
+* `-v`: show the current version of the script
+
+* `-o OUTPUT_PATH`: the path where the course will be stored. If not set, the path used is the one from where the script is executed.
+
+* `--includerefs`: if set, the references section is added to the course. Otherwise, they are ignored.
+
+* `-n`, `--keepnums`: If set, the numbering in section and session titles (e.g. "3.6.1 -") is kept. Otherwise, they are removed.
 
 #### Troubleshooting
 
