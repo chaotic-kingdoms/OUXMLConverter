@@ -47,10 +47,10 @@
     </xsl:template>
 
     <xsl:template match="Box">
-        <p class="box activity">
+        <div class="box core">
         <h2><xsl:value-of select="Heading"/></h2>
         <xsl:apply-templates select="*[not(self::Heading)]"/>
-        </p>
+        </div>
     </xsl:template>
 
     <xsl:template match="CaseStudy">
@@ -109,6 +109,27 @@
 
     <xsl:template match="Session/Section/Title">
         <h3 class="subsection"><xsl:apply-templates/></h3>
+    </xsl:template>
+
+    <xsl:template match="Table">
+        <h2><xsl:value-of select="TableHead"/></h2>
+        <table style="width:100%">
+            <xsl:for-each select="tbody/tr">
+                <tr>
+                    <xsl:for-each select="td">
+                        <td>
+                            <xsl:if test="@rowspan != ''">
+                                <xsl:attribute name="rowspan"><xsl:value-of select="@rowspan"/></xsl:attribute>
+                            </xsl:if>
+                            <xsl:if test="@colspan != ''">
+                                <xsl:attribute name="colspan"><xsl:value-of select="@colspan"/></xsl:attribute>
+                            </xsl:if>
+                            <xsl:apply-templates/>
+                        </td>
+                    </xsl:for-each>
+                </tr>
+            </xsl:for-each>
+        </table>
     </xsl:template>
 
 
