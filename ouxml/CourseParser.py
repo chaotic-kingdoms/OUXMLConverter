@@ -58,7 +58,7 @@ class CourseParser:
 
     def parse_xml(self, content):
         """ Parse the xml file and build the course"""
-        content = content.replace('<b />', '')
+        content = content.replace('<b />', '').replace('<TableHead/>', '')
         element = ElementTree.fromstring(content)
 
         if not self.course.title_full:

@@ -60,9 +60,9 @@
         </p>
     </xsl:template>
 
-    <xsl:template match="ITQ">
+    <xsl:template match="ITQ|SAQ">
         <div class="box question">
-            <p><xsl:value-of select="Question"/></p>
+            <p><xsl:apply-templates select="Question"/></p>
             <div>
                 <xsl:attribute name="name">reveal</xsl:attribute>
                 <xsl:attribute name="id"><xsl:value-of select="position()"/></xsl:attribute>
@@ -71,7 +71,7 @@
             </div>
             <div>
                 <xsl:attribute name="id"><xsl:value-of select="concat('answer', position())"/></xsl:attribute>
-                <p><xsl:value-of select="Answer"/></p>
+                <p><xsl:apply-templates select="Answer"/></p>
             </div>
         </div>
     </xsl:template>
@@ -113,7 +113,15 @@
 
     <xsl:template match="Table">
         <h2><xsl:value-of select="TableHead"/></h2>
-        <table style="width:100%">
+        <table>
+            <xsl:choose>
+                <xsl:when test="ancestor::SAQ">
+                    <xsl:attribute name="style">margin-left:-50px</xsl:attribute>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:attribute name="style">width:100%</xsl:attribute>
+                </xsl:otherwise>
+            </xsl:choose>
             <xsl:for-each select="tbody/tr">
                 <tr>
                     <xsl:for-each select="td">
