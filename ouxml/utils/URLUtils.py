@@ -33,7 +33,7 @@ class URLUtils(object):
 
     @staticmethod
     def url_for_xml(url):
-        return URLUtils.replace_qs_param(url.strip(), {'content':'scxml'})
+        return URLUtils.replace_qs_param(url.strip(), {'content': 'scxml'})
 
     @staticmethod
     def replace_qs_param(url, params):
@@ -64,6 +64,8 @@ class URLUtils(object):
 
     @staticmethod
     def __url_for_scrappable_format(url, ouformat):
+        # remove previous any "content" param that may be present, we want the html summary
+        url = URLUtils.replace_qs_param(url.strip(), {'content': ''})
         err, page = URLUtils.get(url)
         if err:
             return None
