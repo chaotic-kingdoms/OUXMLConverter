@@ -53,10 +53,17 @@ class ContentPreprocessor:
         return re.sub('(&#160;)+', ' ', ET.tostring(newdom, pretty_print=True))
 
     def optimize_images(self):
-        images_dir = os.path.join(settings.OUTPUT_PATH, 'temp', 'images')
-        images = listdir(images_dir)
-        size_saved = 0
 
+        images_dir = os.path.join(settings.OUTPUT_PATH, 'temp', 'images')
+
+        try:
+            images = listdir(images_dir)
+        except Exception as e:
+            print '\r  > Error trying to optimize images: ',
+            print e
+            return
+
+        size_saved = 0
         for i, image_file in enumerate(images):
             image_path = os.path.join(images_dir, image_file)
 
