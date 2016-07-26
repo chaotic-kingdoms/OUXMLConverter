@@ -23,7 +23,7 @@ ouxml.py [optional arguments] input_file
 ```
 
 Arguments:
-* `input_file`: **mandatory**. Path to a plain text file containing the URLs to the Open University course sections. The URLs don't need to contain the content format parameter (e.g. `?content=scxml`)
+* `input_file`: **mandatory**. Path to a plain text file containing the URLs to the Open University course sections. The URLs should not to contain the content format parameter (e.g. `?content=scxml`)
 
 * `-h`, `--help`: show the usage help message
 
