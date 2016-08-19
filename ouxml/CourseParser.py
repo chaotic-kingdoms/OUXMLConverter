@@ -73,7 +73,7 @@ class CourseParser:
         session_count = len(element.findall('.//Session'))
         references_count = len(element.findall('.//Reference'))
 
-        if references_count > 0 and (not self.includerefs):
+        if references_count > 0 and session_count == 0 and (not self.includerefs):
             print '  > References section. Excluding it...'
             return
 
