@@ -157,7 +157,7 @@ class CourseParser:
                 if not concept or not definition:
                     continue
 
-                glossary_item = GlossaryItem(concept[0].text_content().title(), definition[0].text_content().title())
+                glossary_item = GlossaryItem(concept[0].text_content().capitalize(), definition[0].text_content().capitalize())
                 key = concept[0].text_content()[0].upper()
                 if key in glossary_items:
                     glossary_items[key].append(glossary_item)
