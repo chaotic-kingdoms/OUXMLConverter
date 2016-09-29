@@ -87,7 +87,11 @@ class Glossary:
                         if index[0] == index[2]:
                             grouped_items[index[0]] = grouped_items.pop(index)
 
-                        index = key + '-' + key
+                        if key == 'Z':
+                            index = key
+                        else:
+                            index = key + '-' + key
+
                         grouped_items[index] = self.glossary_items[key]
                     else:
                         new_index = index[:-1] + key
